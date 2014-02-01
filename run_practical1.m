@@ -1,8 +1,12 @@
-%This function runs the practical 1
+
 function [ success ] = run_practical1( directory )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 %AV Practical 1
+%January 30, 2014       Creation
+%function run_practical1
+%   This function runs the Advanced Vision practical 1
+%Input : directory - the directory name where images are
+%Output : success - success state for last step executed
+%Authors
 %Robert Evans
 %Francisco Aguirre
 

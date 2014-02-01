@@ -16,6 +16,7 @@ function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,f
   min_radius=10;
   max_radius=25;
   
+  
   [MR,MC,Dim] = size(Imback);
 
   % subtract background & select pixels with a big difference

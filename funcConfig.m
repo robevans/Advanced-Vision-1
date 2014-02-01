@@ -5,7 +5,7 @@ function [ ParameterValue ] = funcConfig( sParameterName )
 
 switch sParameterName
     case 'nImagesAverageBackground'        
-        ParameterValue = 50;
+        ParameterValue = 10;
     case 'sDirectory'
         ParameterValue = './SEQ1/';
     case 'fileAdaptiveBackground'

@@ -56,13 +56,13 @@ for i = 1 : iNumBackgroundImages
         imagesBackGround(:,:,3,:) = rgbsum / 3; % Saturation
         
         % estimate sigma using robust estimator to avoid outliers
-        bgdiff = abs(imagesBackGround(:,:,1,1:49) - imagesBackGround(:,:,1,2:50));
+        bgdiff = abs(imagesBackGround(:,:,1,1:(iNumBackgroundImages-1)) - imagesBackGround(:,:,1,2:iNumBackgroundImages));
         % compute sigma
         imageSigma = median(bgdiff,4) ./ (0.68*sqrt(2));
         
         % hypothesise initial history with median value in case foreground present
         medians = median(imagesBackGround,4);
-        imagesBackGround = repmat(medians,1,1,1,50)+repmat(imageSigma,1,1,3,iNumBackgroundImages).*randn(iRows,iColumns,3,iNumBackgroundImages);
+        imagesBackGround = repmat(medians,1,1,1,iNumBackgroundImages)+repmat(imageSigma,1,1,3,iNumBackgroundImages).*randn(iRows,iColumns,3,iNumBackgroundImages);
     end
 end
 

@@ -21,7 +21,7 @@ function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,f
   [MR,MC,Dim] = size(Imback);
 
   % subtract background & select pixels with a big difference
-  fore = zeros(MR,MC);
+ % fore = zeros(MR,MC);
   fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > iThresholdBackground) ...
      | (abs(Imwork(:,:,2) - Imback(:,:,2)) > iThresholdBackground) ...
      | (abs(Imwork(:,:,3) - Imback(:,:,3)) > iThresholdBackground);
@@ -49,6 +49,8 @@ function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,f
     imshow(foremm)
     %eval(['imwrite(uint8(foremm),''BCLEAN/cln',int2str(index),'.jpg'',''jpg'')']);  
   end
+  
+  
 
   % select labeled objects in a matrix
 %  labeled = bwlabel(foremm,4);

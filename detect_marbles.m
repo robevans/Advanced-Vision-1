@@ -29,7 +29,11 @@ fig15=1; %debug, show foreground minus background
 fig3=0; %debug
 fig4=0;
 
+<<<<<<< HEAD
 %num_Images=10;
+=======
+num_Images=30;
+>>>>>>> 3cedb96df658b5b4eb5ddc4616ea89b6b964f5e7
 for i = 1 : num_Images
     % load image
   Im = imread([strcat(directory,int2str(i)), '.jpg'],'jpg');

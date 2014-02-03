@@ -10,6 +10,7 @@ function [ success ] = run_practical1( directory )
 %Robert Evans
 %Francisco Aguirre
 
+%[Images_marbles,success]=detect_marbles_adaptive(directory);
 [Images_marbles,success]=detect_marbles(directory);
 
 if (~success)

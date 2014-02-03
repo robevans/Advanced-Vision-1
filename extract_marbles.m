@@ -15,24 +15,33 @@ function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,f
   n_detected=0;
   min_radius=10;
   max_radius=25;
+  iThresholdBackground = 15;
   
   
   [MR,MC,Dim] = size(Imback);
 
   % subtract background & select pixels with a big difference
   fore = zeros(MR,MC);
-  fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > 10) ...
-     | (abs(Imwork(:,:,2) - Imback(:,:,2)) > 10) ...
-     | (abs(Imwork(:,:,3) - Imback(:,:,3)) > 10);
+  fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > iThresholdBackground) ...
+     | (abs(Imwork(:,:,2) - Imback(:,:,2)) > iThresholdBackground) ...
+     | (abs(Imwork(:,:,3) - Imback(:,:,3)) > iThresholdBackground);
   if fig15 > 0
-    figure(fig15)
+    figure(fig1)
     clf
     imshow(fore)
     %eval(['imwrite(uint8(fore),''BGONE/nobg',int2str(index),'.jpg'',''jpg'')']);  
   end
 
   % erode to remove small noise
-  foremm = bwmorph(fore,'erode',2);
+  %foremm = bwmorph(fore,'erode',1);
+  foremm = fore;
+  foremm = bwmorph(foremm,'clean');
+  foremm = bwmorph(foremm,'thicken');
+  foremm = bwmorph(foremm,'close',10);
+  foremm = bwmorph(foremm,'open',10);
+  %foremm = bwmorph(foremm,'erode',1);
+  %foremm = bwmorph(foremm,'thicken',5);
+  %foremm = bwmorph(foremm,'erode',1);
 
   if fig2 > 0
     figure(fig2)

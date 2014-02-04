@@ -20,7 +20,7 @@ success=true;
 %beta=1.2;
 alpha=0.97;
 beta=1.03;
-tau=0.00005;
+tau=0.9;
 %SIGMAFUDGE=6;
 iNumBackgroundImages=funcConfig('nImagesAverageBackground');
 
@@ -54,7 +54,7 @@ for i = 1 : num_Images
     
     
     for r = 1:rows %200:250%1:rows/10 %14:14 %1:rows/10
-[i,r]
+%[i,r];
        for c = 1 : cols%200:250%1 : cols/10 %25:25 %1 : cols/10
             % compute cromaticity coordinates
             R=double(imageCurrentRGB(r,c,1)); 
@@ -83,14 +83,14 @@ for i = 1 : num_Images
                 end
                 if alpha < ratio && ratio < beta
                     count = count+1;
-                    prob = prob + kernel(sigma,red-bghistory(r,c,1,k))* ...
-                           kernel(sigma,green-bghistory(r,c,2,k));
+                    prob = prob + kernel(sigma,(red-bghistory(r,c,1,k))./255)* ...
+                           kernel(sigma,(green-bghistory(r,c,2,k)./255))
                 end
             end
                 if count > 0 
                     p_x_b = (prob/count);
                     p_b = 0.99;     % rough estimate of % a pixel is BG. Should compute.
-                    p_x_f= 0.001;   % rough estimate of prob that this foreground pixel value
+                    p_x_f= 0.01;   % rough estimate of prob that this foreground pixel value
                                   % is chosen. Assumes all FG values possible uniformly and
                                   % there are 1000 FG values. Ought to compute this given
                                   % some (r,g) samples

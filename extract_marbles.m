@@ -1,4 +1,4 @@
-function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,fig15,index)
+function [cc,cr,radii,n_detected, foreground]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,fig15,index)
 %Function extract_marbles
 %Extract marbles from image
 %marble_n is the n detected marble, and it is not yet a tracking id
@@ -15,20 +15,48 @@ function [cc,cr,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,f
   n_detected=0;
   min_radius=10;
   max_radius=25;
-  iThresholdBackground = 15;
+  iThresholdBackground = 0.2;
   
+  grey_back = sum(Imback,3)./3;
+  grey_work = sum(Imwork,3)./3;
+  
+  grey_subtract = abs(grey_work - grey_back);
+  
+  % Adaptive threshold
+  [counts, levels] = imhist(uint8(grey_subtract), 500);
+  cdf = cumsum(counts)/sum(counts);
+  threshold = max(10, levels( find(cdf < 0.98, 1, 'last') ))
+  if isempty(threshold)
+      threshold = 5;
+  end
+  grey_thresh = grey_subtract > threshold;
+  
+  cleaned = bwmorph(grey_thresh, 'clean', 1);
+  cleaned = bwmorph(grey_thresh, 'close', 2);
+  
+  imshow(cleaned);
+  
+  masked_rgb = (Imwork./255).*repmat(grey_thresh,1,1,3);
+  masked_grey = sum(masked_rgb,3)./3;
+  
+  foreground = masked_grey;
+  
+  Imback_ch = convertToChromaticity(Imback);
+  Imwork_ch = convertToChromaticity(Imwork); 
+  
+  ch_subtract = abs( sum(Imback_ch(:,:,1:2),3)./2 - sum(Imwork_ch(:,:,1:2),3)./2 );
   
   [MR,MC,Dim] = size(Imback);
 
   % subtract background & select pixels with a big difference
  % fore = zeros(MR,MC);
   fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > iThresholdBackground) ...
-     | (abs(Imwork(:,:,2) - Imback(:,:,2)) > iThresholdBackground) ...
-     | (abs(Imwork(:,:,3) - Imback(:,:,3)) > iThresholdBackground);
+     | (abs(Imwork(:,:,2) - Imback(:,:,2)) > iThresholdBackground); % ...
+     %| (abs(Imwork(:,:,3) - Imback(:,:,3)) > iThresholdBackground);
   if fig15 > 0
     figure(fig1)
     clf
-    imshow(fore)
+    %imshow(fore)
     %eval(['imwrite(uint8(fore),''BGONE/nobg',int2str(index),'.jpg'',''jpg'')']);  
   end
 

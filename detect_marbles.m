@@ -23,13 +23,14 @@ imgBackGround = double(imread(strcat(directory,'1.','jpg')));
 num_Images=length(dir('SEQ1/*jpg'));
 
  % loop over all images
-fig1=1;
-fig2=3; %show image after erosion
-fig15=1; %debug, show foreground minus background
+fig1=0;
+fig2=0; %show image after erosion
+fig15=0; %debug, show foreground minus background
 fig3=0; %debug
-fig4=4;
+fig4=0;
 
-num_Images=30;
+%num_Images=10;
+
 for i = 1 : num_Images
     % load image
   Im = imread([strcat(directory,int2str(i)), '.jpg'],'jpg');

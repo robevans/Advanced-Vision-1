@@ -49,7 +49,7 @@ for i = 1 : num_Images
   %(<marble_n)
   %n_detected is the number of detected marbles
   
-  [cc(:,i),cr(:,i),radii,n_detected]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,fig15,i);
+  [cc(:,i),cr(:,i),radii,n_detected] = extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,fig15,i);
   if flag==0
     continue
   end

@@ -125,7 +125,7 @@ BCHDetected = selectAreaRange(BCHDetected, min_radius, max_radius);
 greyDetected = selectAreaRange(greyDetected, min_radius, max_radius);
 
 % Combine all channels to find the final detections
-foreground = (redDetected | greenDetected | greenDetected ...
+foreground = (redDetected | greenDetected | blueDetected ...
     | RCHDetected | GCHDetected | BCHDetected) ...
     & greyDetected;
 
@@ -193,7 +193,7 @@ end
 
 function im_detected_objects = selectAreaRange(bwimage, min_radius, max_radius)
 connected_components= bwconncomp(bwimage,4);
-stats = regionprops(connected_components,['basic']);
+stats = regionprops(connected_components,'basic');
 idx_objects = find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)));
 im_detected_objects = ismember(labelmatrix(connected_components),idx_objects);
 end

@@ -11,13 +11,13 @@ function [ success ] = run_practical1( directory )
 %Francisco Aguirre
 
 %[Images_marbles,success]=detect_marbles_adaptive(directory);
-[Images_marbles,success]=detect_marbles(directory);
+[matMarbles,success]=detect_marbles(directory);
 
 if (~success)
     return;
 end
 
-[Tracking_marbles,success]=track_marbles(Images_marbles);
+[Tracking_marbles,success]=track_marbles(matMarbles);
 
 if (~success)
    return;
@@ -29,7 +29,7 @@ if (~success)
     return;
 end    
 
-success=ground_truth_statistics(Tracking_marbles)
+success=ground_truth_statistics(directory,Tracking_marbles)
 
 
 end

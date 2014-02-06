@@ -1,4 +1,4 @@
-function [centres,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3)
+function [matMarbles,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3)
 %Function extract_marbles
 %AV Practical 1
 %Extract marbles from image
@@ -12,17 +12,17 @@ function [centres,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3
 %       used
 %       index  - Current image index
 %Output:
-%       centres contains the centres of the marbles in x, y coordinates
+%       matCentres contains the centres of the marbles in x, y coordinates
+%       plus the radii
 %       radii is an array containing the radius of each marble as is indexed by
 %       n_detected is the number of detected marbles
 %       n_detected is 0 if failure, otherwise the number of detected marbles
 
-centres = 0;
-radii=0;
+matMarbles = zeros(1,3);
 n_detected=0;
 min_radius=3;
 max_radius=30;
-max_eccentricity=0.5;
+max_eccentricity=0.9;
 
 %%% Background subtractions for RGB, greyscale and Chromaticity:
 
@@ -173,12 +173,11 @@ foreground = (redDetected | greenDetected | blueDetected ...
         imshow(im_detected_objects)
     end
     
-    centres=zeros(2,length(stats_detected_objects));
-    radii=zeros(length(stats_detected_objects),1);
+    matMarbles=[];
     % get center of mass and radius of each object
     for i=1:length(stats_detected_objects)
-        centres(:,:,i)=stats_detected_objects(i).Centroid;
-        radii=sqrt(stats_detected_objects(i).Area/pi);
+        matMarbles(i,1:2)=stats_detected_objects(i).Centroid;
+        matMarbles(i,3)=sqrt(stats_detected_objects(i).Area/pi);
         n_detected=n_detected+1;
     end
     

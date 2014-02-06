@@ -49,9 +49,8 @@ for i = 1 : num_Images
   %(<marble_n)
   %n_detected is the number of detected marbles
   
-  [centres(:,:,i),radii(:,i),n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,fig15,i);
-
-  %{
+  [centres(:,:,i),radii(:,i),n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3);
+%{
   if fig1 > 0
     figure(fig1)
     hold on
@@ -63,10 +62,12 @@ for i = 1 : num_Images
     %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  
   end
 %}
+  
       pause(0.3)
 end
 
 % show positions
+
 if fig4 > 0
   figure(fig4)
   hold on
@@ -75,6 +76,5 @@ if fig4 > 0
   plot(cr,'g*')
 end
 
-%}
 end
 

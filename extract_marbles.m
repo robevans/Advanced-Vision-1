@@ -23,7 +23,6 @@ n_detected=0;
 min_radius=3;
 max_radius=30;
 max_eccentricity=0.5;
-iThresholdBackground = 0.2;
 
 %%% Background subtractions for RGB, greyscale and Chromaticity:
 
@@ -39,9 +38,6 @@ GreyThreshold = max(10, levels( find(cdf < 0.97, 1, 'last') ));
 if isempty(GreyThreshold)
     GreyThreshold = 5;
 end
-grey_thresh = greySubtraction > GreyThreshold;
-cleaned = bwmorph(grey_thresh, 'clean', 1);
-cleaned = bwmorph(cleaned, 'close', 2);
 
 %% RGB background subtraction
 redSubtraction = abs(Imwork(:,:,1)-Imback(:,:,1));
@@ -152,8 +148,7 @@ foreground = (redDetected | greenDetected | blueDetected ...
         imshow(foreground);
         figure(fig2);
         imshow(uint8(Imwork));
-    end
-    
+    end   
     
     
     % select labeled objects in a matrix
@@ -178,11 +173,11 @@ foreground = (redDetected | greenDetected | blueDetected ...
         imshow(im_detected_objects)
     end
     
-    centres=zeros(length(stats_detected_objects));
-    radii=zeros(length(stats_detected_objects));
+    centres=zeros(2,length(stats_detected_objects));
+    radii=zeros(length(stats_detected_objects),1);
     % get center of mass and radius of each object
     for i=1:length(stats_detected_objects)
-        centres(i)=stats_detected_objects(i).Centroid;
+        centres(:,:,i)=stats_detected_objects(i).Centroid;
         radii=sqrt(stats_detected_objects(i).Area/pi);
         n_detected=n_detected+1;
     end

@@ -26,7 +26,7 @@ num_Images=length(dir('SEQ1/*jpg'));
 fig1=0;
 fig2=0; %show image after erosion
 fig15=0; %debug, show foreground minus background
-fig3=0; %debug
+fig3=3; %debug, show detected objects
 fig4=0;
 
 %num_Images=10;
@@ -49,10 +49,8 @@ for i = 1 : num_Images
   %(<marble_n)
   %n_detected is the number of detected marbles
   
-  [cc(:,i),cr(:,i),radii,n_detected] = extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3);
-  if flag==0
-    continue
-  end
+  [centres(:,:,i),radii(:,i),n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3);
+
 %{
   if fig1 > 0
     figure(fig1)
@@ -65,10 +63,12 @@ for i = 1 : num_Images
     %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  
   end
 %}
+  
       pause(0.3)
 end
 
 % show positions
+
 if fig4 > 0
   figure(fig4)
   hold on
@@ -77,6 +77,5 @@ if fig4 > 0
   plot(cr,'g*')
 end
 
-%}
 end
 

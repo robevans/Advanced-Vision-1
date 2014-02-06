@@ -44,7 +44,9 @@ for i = 1 : num_Images
   %each rows has a detected object (hopefully a marble)
   %n_detected is the number of detected marbles
   
+
   [matMarbles{i},n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3);
+
 
   if fig1 > 0
     figure(fig1)

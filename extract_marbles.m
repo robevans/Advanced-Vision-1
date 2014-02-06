@@ -125,6 +125,11 @@ foreground = (redDetected | greenDetected | blueDetected ...
     | RCHDetected | GCHDetected | BCHDetected) ...
     & greyDetected;
 
+%% TODO: Average masked backgrounds into current background.
+new_bg_mask = Imwork.*repmat(foreground,1,1,3);
+figure(3);
+imshow(new_bg_mask);
+
 %{
   masked_rgb = (Imwork./255).*repmat(grey_thresh,1,1,3);
   masked_grey = sum(masked_rgb,3)./3;
@@ -187,7 +192,7 @@ end
 
 function im_detected_objects = selectAreaRange(bwimage, min_radius, max_radius)
 connected_components= bwconncomp(bwimage,4);
-stats = regionprops(connected_components,['basic']);
+stats = regionprops(connected_components,'basic');
 idx_objects = find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)));
 im_detected_objects = ismember(labelmatrix(connected_components),idx_objects);
 end

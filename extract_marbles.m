@@ -1,20 +1,28 @@
-function [cc,cr,radii,n_detected, foreground]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,fig15,index)
+function [centres,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,fig15,index)
 %Function extract_marbles
+%AV Practical 1
 %Extract marbles from image
-%marble_n is the n detected marble, and it is not yet a tracking id
-%cc contains the centres of the marbles (<marble_n>,<frame>)
-%cr contains the radii of the marbles (<marble_n>,<frame>)
-%radii is an array containing the radius of each marble as is indexed by
-%(<marble_n)
-%n_detected is the number of detected marbles
-% n_detected = 0 if failure, otherwise the number of detected marbles
+%Input: Imwork - Current image to extract from
+%       Imback - Background image
+%       fig1   - if set, shows background substraction, usually set to
+%       value 1
+%       fig2   - if set, shows foreground, usually set to value 2
+%       fig3   - if set, shows detected objects, usually set to value 3
+%       fig15  - used for debugging, usually set to value 15. Not currently
+%       used
+%       index  - Current image index
+%Output:  
+%       centres contains the centres of the marbles in x, y coordinates
+%       radii is an array containing the radius of each marble as is indexed by
+%       n_detected is the number of detected marbles
+%       n_detected is 0 if failure, otherwise the number of detected marbles
   
-  cc = 0;
-  cr = 0;
+  centres = 0;
   radii=0;
   n_detected=0;
-  min_radius=10;
+  min_radius=5;
   max_radius=25;
+  max_eccentricity=0.5;
   iThresholdBackground = 0.2;
   
   grey_back = sum(Imback,3)./3;
@@ -71,18 +79,19 @@ function [cc,cr,radii,n_detected, foreground]=extract_marbles(Imwork,Imback,fig1
   %foremm = bwmorph(foremm,'thicken',5);
   %foremm = bwmorph(foremm,'erode',1);
 
+  foreground=cleaned;
   if fig2 > 0
-    figure(fig2)
-    clf
-    imshow(foremm)
-    %eval(['imwrite(uint8(foremm),''BCLEAN/cln',int2str(index),'.jpg'',''jpg'')']);  
+    %figure(fig2)
+    %clf
+    %imshow(foreground)
+    imwrite(uint8(foreground),['BGCLEAN/',int2str(index),'.jpg'],'jpg');  
   end
   
-  
+
 
   % select labeled objects in a matrix
 %  labeled = bwlabel(foremm,4);
-  connected_components= bwconncomp(foremm,4);
+  connected_components= bwconncomp(foreground,4);
 %  stats = regionprops(labeled,['basic']);
 %  [n_detected,W] = size(stats);
 
@@ -90,10 +99,10 @@ function [cc,cr,radii,n_detected, foreground]=extract_marbles(Imwork,Imback,fig1
   % and max defined
   %put in im_detected_objects only objects matrix
   %code snippet adapted from Matlab13 help for regionprops function.
-  stats =regionprops(connected_components,['basic']);
-  idx_objects=find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)));
+  stats =regionprops(connected_components,'Eccentricity','Centroid','Area');
+  idx_objects=find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)) & [stats.Eccentricity] < max_eccentricity);  
   im_detected_objects=ismember(labelmatrix(connected_components),idx_objects);
-  stats_detected_objects=stats([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)));
+  stats_detected_objects=stats([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)) & [stats.Eccentricity] < max_eccentricity );
 
 %  stats = stats(stats.Area>(pi*(min_radius^2)) & stats.Area<(pi*(max_radius^2)));
 %  n_detected = [bwconncomp(im_detected_objects,4)].NumObjects;
@@ -129,13 +138,16 @@ function [cc,cr,radii,n_detected, foreground]=extract_marbles(Imwork,Imback,fig1
     figure(fig3)
     clf
     imshow(im_detected_objects)
+%    imwrite(uint8(im_detected_objects),['BGDETECT/',int2str(index),'.jpg'],'jpg');      
   end
-%{
+
+  centres=zeros(length(stats_detected_objects));
+  radii=zeros(length(stats_detected_objects));
   % get center of mass and radius of largest
-  centroid = stats(1).Centroid;
-  radius = sqrt(stats(1).Area/pi);
-  cc = centroid(1);
-  cr = centroid(2);
-  n_detected = 1;
-  %}
+  for i=1:length(stats_detected_objects)
+      centres(i)=stats_detected_objects(i).Centroid;
+      radii=sqrt(stats_detected_objects(i).Area/pi);
+      n_detected=n_detected+1;
+  end
+  
   return

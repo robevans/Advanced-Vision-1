@@ -141,12 +141,12 @@ function [centres,radii,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3
 %    imwrite(uint8(im_detected_objects),['BGDETECT/',int2str(index),'.jpg'],'jpg');      
   end
 
-  centres=zeros(length(stats_detected_objects));
-  radii=zeros(length(stats_detected_objects));
+  centres=zeros(2,length(stats_detected_objects));
+  radii=zeros(length(stats_detected_objects),1);
   % get center of mass and radius of largest
   for i=1:length(stats_detected_objects)
-      centres(i)=stats_detected_objects(i).Centroid;
-      radii=sqrt(stats_detected_objects(i).Area/pi);
+      centres(:,i)=stats_detected_objects(i).Centroid;
+      radii(i)=sqrt(stats_detected_objects(i).Area/pi);
       n_detected=n_detected+1;
   end
   

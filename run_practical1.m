@@ -11,13 +11,13 @@ function [ success ] = run_practical1( directory )
 %Francisco Aguirre
 
 %[Images_marbles,success]=detect_marbles_adaptive(directory);
-[matMarbles,success]=detect_marbles(directory);
+[matMarbles,vecnDetected,success]=detect_marbles(directory,false);
 
 if (~success)
     return;
 end
 
-[Tracking_marbles,success]=track_marbles(matMarbles);
+[Tracking_marbles,success]=track_marbles(matMarbles,directory, vecnDetected);
 
 if (~success)
    return;

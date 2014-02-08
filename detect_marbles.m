@@ -1,5 +1,5 @@
 
-function [ matMarbles,success ] = detect_marbles( directory )
+function [ matMarbles,n_detected, success ] = detect_marbles( directory, bShowImages )
 %Function detect_marbles
 %AV1 Practical 1
 % This function detects marbles in images located in the provided directory
@@ -10,6 +10,8 @@ function [ matMarbles,success ] = detect_marbles( directory )
 % format %d.jpg
 % Output : matMarbles - cell array of detected marbles, indexed by frame,
 %                       containing x, y and radius
+%          n_detected - vector containing the number of detected marbles
+%          per frame
 %          sucess - Number of detected marbles, 0 if none which corresponds
 %          to failure, non-zero is sucess
 %Robert Evans, Francisco Aguirre
@@ -45,7 +47,7 @@ for i = 1 : num_Images
   %n_detected is the number of detected marbles
   
 
-  [matMarbles{i},n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3);
+  [matMarbles{i},n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
 
 
   if fig1 > 0

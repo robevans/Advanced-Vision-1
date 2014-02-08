@@ -1,4 +1,4 @@
-function [matMarbles,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3)
+function [matMarbles,n_detected]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,bShowImages)
 %Function extract_marbles
 %AV Practical 1
 %Extract marbles from image
@@ -127,9 +127,10 @@ foreground = (redDetected | greenDetected | blueDetected ...
 
 %% TODO: Average masked backgrounds into current background.
 new_bg_mask = Imwork.*repmat(foreground,1,1,3);
-figure(3);
-imshow(new_bg_mask);
-
+if bShowImages
+    figure(3);
+    imshow(new_bg_mask);
+end
 %{
   masked_rgb = (Imwork./255).*repmat(grey_thresh,1,1,3);
   masked_grey = sum(masked_rgb,3)./3;
@@ -148,7 +149,7 @@ imshow(new_bg_mask);
     foreground = bwmorph(foreground,'open',10);
     
     %Show the detections and the true image
-    if fig1 > 0 && fig2 > 0
+    if fig1 > 0 && fig2 > 0 && bShowImages
         figure(fig1);
         imshow(foreground);
         figure(fig2);
@@ -172,7 +173,7 @@ imshow(new_bg_mask);
         return
     end
     
-    if fig3 > 0
+    if fig3 > 0 && bShowImages
         figure(fig3)
         clf
         imshow(im_detected_objects)

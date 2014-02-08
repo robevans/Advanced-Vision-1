@@ -23,6 +23,7 @@ dt=1;
 A=[[1,0,0,0]',[0,1,0,0]',[dt,0,1,0]',[0,dt,0,1]'];
 %g = 6; % pixels^2/time step
 %Bu = [0,0,0,g]';
+%TODO eliminate unused variables
 kfinit=0;
 
 % multiple condensation states

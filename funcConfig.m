@@ -10,6 +10,10 @@ switch sParameterName
         ParameterValue = './SEQ1/';
     case 'fileAdaptiveBackground'
         ParameterValue = 'fileAdaptiveBackground.mat';
+    case 'nMaxMarbles'
+        ParameterValue = 18;
+    case 'nNumHypothesis'
+        ParameterValue=100;        
 end;    
 
 end

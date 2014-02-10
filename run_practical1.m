@@ -16,7 +16,10 @@ function [ success ] = run_practical1( directory )
 if (~success)
     return;
 end
-
+%TODO remove after completion
+local_matMarbles=matMarbles;
+local_directory=directory;
+local_vecnDetected=vecnDetected;
 [Tracking_marbles,success]=track_marbles(matMarbles,directory, vecnDetected);
 
 if (~success)

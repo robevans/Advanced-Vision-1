@@ -23,6 +23,7 @@ n_detected=0;
 min_radius=3;
 max_radius=30;
 max_eccentricity=0.9;
+max_circularity=2;
 
 %%% Background subtractions for RGB, greyscale and Chromaticity:
 
@@ -164,8 +165,8 @@ foreground = (redDetected | greenDetected | blueDetected ...
     % make sure that there are marbles, which can have a radius between min
     % and max defined
     %put in im_detected_objects only objects matrix
-    stats = regionprops(connected_components,'Eccentricity','Centroid','Area');
-    idx_objects = find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)) & [stats.Eccentricity] < max_eccentricity);
+    stats = regionprops(connected_components,'Eccentricity','Centroid','Area','Perimeter');
+    idx_objects = find([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)) & [stats.Eccentricity] < max_eccentricity & (([stats.Perimeter] .^ 2) ./ (4 * pi * [stats.Area])) < max_circularity);
     im_detected_objects = ismember(labelmatrix(connected_components),idx_objects);
     stats_detected_objects = stats([stats.Area]>=(pi*(min_radius^2)) & [stats.Area]<=(pi*(max_radius^2)) & [stats.Eccentricity] < max_eccentricity );
     

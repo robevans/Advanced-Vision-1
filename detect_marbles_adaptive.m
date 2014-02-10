@@ -39,7 +39,7 @@ end;
 num_Images=length(dir(strcat(directory,'*jpg')));
 
 % loop over all images
-num_Images=8;
+%num_Images=8;
 for i = 1 : num_Images
     imageCurrentRGB = imread([strcat(directory,int2str(i)), '.jpg'],'jpg');
     if i==1 
@@ -83,8 +83,8 @@ for i = 1 : num_Images
                 end
                 if alpha < ratio && ratio < beta
                     count = count+1;
-                    prob = prob + kernel(sigma,(red-bghistory(r,c,1,k))./255)* ...
-                           kernel(sigma,(green-bghistory(r,c,2,k)./255))
+                    prob = prob + kernel(sigma,(red-bghistory(r,c,1,k)))* ...
+                           kernel(sigma,(green-bghistory(r,c,2,k)));
                 end
             end
                 if count > 0 

@@ -19,6 +19,7 @@ success=true;
 
 imgBackGround = double(imread(strcat(directory,'1.','jpg')));
 [MR,MC,Dim] = size(imgBackGround);
+imgBaseBackGround = imgBackGround;
 
 %Counting how many data images we got
 num_Images=length(dir('SEQ1/*jpg'));
@@ -47,8 +48,9 @@ for i = 1 : num_Images
   %n_detected is the number of detected marbles
   
 
-  [matMarbles{i},n_detected(i)]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
+  [matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
 
+  imgBackGround = averageInExtractedBackground(imgBaseBackGround, imgBackGround, extracted_background);
 
   if fig1 > 0
     figure(fig1)
@@ -83,3 +85,8 @@ end
 
 end
 
+function averagedBackground = averageInExtractedBackground(baseBackground, currentBackground, newBackground)
+mask_idx = newBackground ~= 0;
+currentBackground(mask_idx) = (currentBackground(mask_idx) + newBackground(mask_idx)) / 2;
+averagedBackground = currentBackground; %(currentBackground + baseBackground) / 2;
+end

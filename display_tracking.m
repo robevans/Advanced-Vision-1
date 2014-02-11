@@ -1,7 +1,39 @@
-function [ success ] = display_tracking( Tracking_marbles,directory )
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+function [ success ] = display_tracking( directory,nTrackedMarbles,matMarblesPosition)
+%Function display_tracking
+%This function display trajectories of detected marbles
+%AV Practical 1 20140210
+%Authors: Robert Evans, Francisco Aguirre
+%Input:    directory - Directory where images are located
+%           matMarblesPosition - matrix of marbles position
+%           (frame,marble_id,x,y)
+%Output:   success - false if there was an error
 success=true;
+iTrackFigure=10;
+sColors=['y','m','c','r','g','b','w','k'];
+
+%Counting how many data images we got
+%nFrames=length(dir(strcat(directory,'*jpg')));
+
+imgFrame = imread(strcat(directory,'1.jpg'),'jpg');
+%[iRows,iColumns,~] = size (imgFrame);
+
+figure(iTrackFigure)
+clf
+imshow(imgFrame);
+hold on;
+
+for iMarble=1:nTrackedMarbles
+    xMarble=0;
+    yMarble=0;
+    
+    sColor=sColors(mod(iMarble,length(sColors)-1)+1);
+    idxValidPositions=find(matMarblesPosition(:,iMarble,1)>0);
+    xDetected=matMarblesPosition(idxValidPositions);
+    yDetected=matMarblesPosition(idxValidPositions);
+    
+    plot(xDetected,yDetected,'Color',sColor,'LineStyle','-','Marker','*');
+end
+
 
 end
 

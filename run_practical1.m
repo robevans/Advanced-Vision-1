@@ -20,19 +20,25 @@ end
 local_matMarbles=matMarbles;
 local_directory=directory;
 local_vecnDetected=vecnDetected;
-[Tracking_marbles,success]=track_marbles(matMarbles,directory, vecnDetected);
+[Tracking_marbles,matMarblesPosition,nTrackedMarbles,success]=track_marbles(matMarbles,directory, vecnDetected);
 
+local_Tracking_marbles=Tracking_marbles;
+local_matMarbles_position=matMarblesPosition;
 if (~success)
    return;
 end   
 
-success=display_tracking(Tracking_marbles,directory);
+success=display_tracking(directory,nTrackedMarbles,matMarblesPosition);
 
 if (~success)
     return;
 end    
 
-success=ground_truth_statistics(directory,Tracking_marbles)
+success=ground_truth_statistics(directory,Tracking_marbles);
+if (~success)
+    fprintf('Ground Truth statistics could not be calculated.');
+    return;
+end    
 
 
 end

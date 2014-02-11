@@ -28,7 +28,7 @@ matGroundTruthStats=zeros(num_Images,2);
 %new_marbles_comingFromRight 
 %new_marbles_comingFromLeft
 if ~exist(gtfile_name,'file')
-    success=0
+    success=0;
     return;
 end
 
@@ -83,10 +83,10 @@ for frame = 1 : num_Images  % loop over all frames
     
 end
 for i=1:length(matGroundTruthStats(:,1))
-    fprintf('Frame %d. Detected marbles: %d Ground Truth: %d. Ratio %.6f\n',matGroundTruthStats(i,2),matGroundTruthStats(i,1),matGroundTruthStats(i,2)/matGroundTruthStats(i,1));
+    fprintf('Frame %d. Images in Ground Truth: %d. Detected marbles within range: %d. Ratio %.6f\n',i,matGroundTruthStats(i,1),matGroundTruthStats(i,2),matGroundTruthStats(i,2)/matGroundTruthStats(i,1));    
 end
 
-fprintf('Final Statistics.\nRatio of detected marbles/ground truth:%.6f\n',sum(matGroundTruthStats(:,2))/sum(matGroundTruthStats(:,1)));
+fprintf('Final Statistics.\nRatio of detected marbles/ground truth:%.6f\n\n',sum(matGroundTruthStats(:,2))/sum(matGroundTruthStats(:,1)));
 success=true;
 
 end

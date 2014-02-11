@@ -1,4 +1,4 @@
-function [ strTrackedMarbles,success ] = track_marbles( matMarbles, directory, vecnDetected )
+function [ strTrackedMarbles,matMarblesPosition,nTrackedMarbles,success ] = track_marbles( matMarbles, directory, vecnDetected )
 %function track_marbles
 %AV Practical 1
 %This function receives centers and radius of detected marbles and
@@ -9,12 +9,16 @@ function [ strTrackedMarbles,success ] = track_marbles( matMarbles, directory, v
 %        and xcenter, ycenter and radius in the columns
 %        directory - Image directory
 %        vecnDetected - vector with the number of detected marbles by frame
-%Output:  strTrackedMarbles - A cell array containing by frame
+%Output:  strTrackedMarbles - A cell array containing by frame an array of
+%x and y positions of tracked marbles
 %         success - non-zero if there were problems, 0 otherwise
-strTrackedMarbles=true;
+strTrackedMarbles=struct('frame',{},'xcenter',{},'ycenter',{});
 nTrackedMarbles=0;
 success=true;
-nMaxMarbles=funcConfig('nMaxMarbles');
+
+%Real number of max marbles plus a slack of wrongly detected objects
+%which need to be cleaned later
+nMaxMarbles=funcConfig('nMaxMarbles')+10;
 nNumHypothesis=funcConfig('nNumHypothesis');
 sColors=['c','y','b','k'];
 
@@ -45,7 +49,13 @@ matHypothesis=zeros(nMaxMarbles,nNumHypothesis,9);
 
 %Counting how many data images we got
 nFrames=length(dir(strcat(directory,'*jpg')));
-debugFig1=1; %Show current image
+
+%Debugging variables
+debugFigure=1; %Figure to draw on
+bdebugAllHypothesis=0; %Show all hypothesis
+bdebugSelectedHypothesis=1; %Show selected hypothesis
+
+matMarblesPosition=zeros(nFrames,nMaxMarbles,2);
 
 %matState matrix columns
 %1 - frame
@@ -68,7 +78,7 @@ idcount=zeros(nMaxMarbles,1);
 matIdent=zeros(nNumHypothesis*nSamplesHypothesis,2);
 
 for iFrame = 1 : nFrames
-  fprintf('track_marbles. Current Frame: %d\n',iFrame);
+%  fprintf('track_marbles. Current Frame: %d\n',iFrame);
   % load image
   imgFrame = imread([strcat(directory,int2str(iFrame)), '.jpg'],'jpg');
   if iFrame==1 
@@ -86,11 +96,11 @@ for iFrame = 1 : nFrames
       
   end
   
-  if debugFig1 > 0
-      figure(debugFig1)
+  if bdebugAllHypothesis||bdebugSelectedHypothesis > 0
+      figure(debugFigure)
       clf
       imshow(imgFrame);
-      pause(0.5);
+%      pause(0.5);
   end
 
   
@@ -120,8 +130,13 @@ for iFrame = 1 : nFrames
  matDetectedMarbles = matMarbles{iFrame};
     
   for iMarble=1:max([1,nTrackedMarbles,vecnDetected(iFrame)])
+        if nTrackedMarbles<=vecnDetected(iFrame)
             xDetected = matDetectedMarbles(iMarble,1);
             yDetected = matDetectedMarbles(iMarble,2);
+        else
+            xDetected = 0;
+            yDetected = 0;
+        end
 
   for iHyp = 1 : nNumHypothesis
 %      fprintf('Current marble %d. Current hyp %d\n',iMarble,iHyp);
@@ -203,13 +218,13 @@ for iFrame = 1 : nFrames
                 weights(iFrame,iHyp,iMarble) = 1/(dvec*dvec');
             
                 % draw some samples over one image
-                if debugFig1 > 0
-                    figure(debugFig1)
+                if bdebugAllHypothesis > 0
+                    figure(debugFigure)
                     hold on
 
                     sColor=sColors(trackstate(iFrame,iMarble,iHyp));                
                     rectangle('Position',[matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),radius,radius],'Curvature',[1,1],...
-                            'FaceColor',sColor);
+                            'EdgeColor',sColor);
                 end   
             elseif iFrame~=1
                 weights(iFrame,iHyp,iMarble) = weights(iFrame-1,iHyp,iMarble);
@@ -232,23 +247,48 @@ for iFrame = 1 : nFrames
             top=top(1);
         end
         
-        trackstate(iFrame,iMarble,top);
+        %Add to our tracking
+        matMarblesPosition(iFrame,iMarble,1)=matState(iFrame,iMarble,top,1);
+        matMarblesPosition(iFrame,iMarble,2)=matState(iFrame,iMarble,top,2);
+        if nTrackedMarbles<vecnDetected(iFrame)
+            nTrackedMarbles=nTrackedMarbles+1;
+        end
+        
+%        trackstate(iFrame,iMarble,top);
         % display final top hypothesis
-        if debugFig1 > 0
-            figure(debugFig1)
+        if bdebugSelectedHypothesis > 0
+            figure(debugFigure)
             hold on
+            sColor=sColors(trackstate(iFrame,iMarble,iHyp));  
             rectangle('Position',[matState(iFrame,iMarble,top,1),matState(iFrame,iMarble,top,2),radius,radius],'Curvature',[1,1],...
-                        'Facecolor',sColor);
+                        'Edgecolor',sColor);
         end               
  
   end
-    pause(0.5) % wait a bit for the display to catch up   
+  
+  %Generate cell array for ground truth comparison
+%if length(strTrackedMarbles)>=iFrame
+  %    xcenter=[strTrackedMarbles(iFrame).xcenter matMarblesPosition(iFrame,:,2)];
+ %     ycenter=[strTrackedMarbles(iFrame).ycenter matMarblesPosition(iFrame,:,3)];
+%  else
+  if matMarblesPosition(iFrame)>0
+      xcenter=[matMarblesPosition(iFrame,:,1)];
+      ycenter=[matMarblesPosition(iFrame,:,2)];
+  else
+      xcenter=[0];
+      ycenter=[0];
+  end
+  
+%  end
+  
+  strTrackedMarbles(iFrame)=struct('frame',iFrame,...
+            'xcenter',xcenter, ...
+            'ycenter',ycenter);
+  %strTrackedMarbles{iFrame}.xcenter=matMarblesPosition(iFrame,2);
+  %strTrackedMarbles{iFrame}.ycenter=matMarblesPosition(iFrame,3);  
+%    pause(0.5) % wait a bit for the display to catch up   
                 
 end
-
-  
-
-
 
 end
 

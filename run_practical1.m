@@ -12,14 +12,8 @@ function [ success ] = run_practical1( directory )
 %[Images_marbles,success]=detect_marbles_adaptive(directory);
 [matMarbles,vecnDetected]=detect_marbles(directory,false);
 
-%TODO remove after completion
-local_matMarbles=matMarbles;
-local_directory=directory;
-local_vecnDetected=vecnDetected;
 [Tracking_marbles,matMarblesPosition,nTrackedMarbles,success]=track_marbles(matMarbles,directory, vecnDetected);
 
-local_Tracking_marbles=Tracking_marbles;
-local_matMarbles_position=matMarblesPosition;
 if (~success)
    return;
 end   

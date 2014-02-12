@@ -18,7 +18,9 @@ function [matMarbles,n_detected,new_background]=extract_marbles(Imwork,Imback,fi
 %       n_detected is the number of detected marbles
 %       n_detected is 0 if failure, otherwise the number of detected marbles
 
-matMarbles = zeros(1,3);
+%matMarbles contains x, y, radius and the histogram of the marble, 256
+%values for the later.
+matMarbles = zeros(1,3+256);
 n_detected=0;
 min_radius=3;
 max_radius=30;
@@ -179,6 +181,8 @@ matMarbles=[];
 for i=1:length(stats_detected_objects)
     matMarbles(i,1:2)=stats_detected_objects(i).Centroid;
     matMarbles(i,3)=sqrt(stats_detected_objects(i).Area/pi);
+    %Get the histogram
+    matMarbles(i,4:(256+3))=(histogramOfCircleAroundPoint(matMarbles(i,1),matMarbles(i,2),matMarbles(i,3),Imwork))';
     n_detected=n_detected+1;
 end
 

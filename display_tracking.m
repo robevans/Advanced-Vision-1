@@ -23,8 +23,6 @@ imshow(imgFrame);
 hold on;
 
 for iMarble=1:nTrackedMarbles
-    xMarble=0;
-    yMarble=0;
     
     sColor=sColors(mod(iMarble,length(sColors)-1)+1);
     idxValidPositions=find(matMarblesPosition(:,iMarble,1)>0);

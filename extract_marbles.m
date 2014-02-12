@@ -183,6 +183,10 @@ for i=1:length(stats_detected_objects)
     matMarbles(i,3)=sqrt(stats_detected_objects(i).Area/pi);
     %Get the histogram
     matMarbles(i,4:(256+3))=(histogramOfCircleAroundPoint(matMarbles(i,1),matMarbles(i,2),matMarbles(i,3),Imwork))';
+    if ~isnumber(matMarbled(i,4:(256+3)))
+        fprintf('Error. histogramOfCircleAroundPoint returned NaN.\n');
+        success=0;
+    end
     n_detected=n_detected+1;
 end
 

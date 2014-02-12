@@ -232,28 +232,21 @@ for iFrame = 1 : nFrames
                 %Get the histogram for the hypothesis
                 histHypothesis=histogramOfCircleAroundPoint(matState(iFrame,iMarble,iHyp,1),...
                     matState(iFrame,iMarble,iHyp,2),radius,imgFrame);
-                dDistanceHistograms=bhattacharyya_distance(histDetected',histHypothesis);
-                weights(iFrame,iMarble,iHyp) = 1/dDistanceHistograms;
+                dDistanceHistograms=bhattacharyya_distance(histDetected,histHypothesis);
+%                weights(iFrame,iMarble,iHyp) = 1/dDistanceHistograms;
                 
 %This distance is proportional to the distance between the detection and
 %the hypothesis location, the greater the distance, the weight goes much
 %lower
-                %                dvec = [xDetected,yDetected] - [matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2)];
-%                 if dvec*dvec'> 2000
-%                     weights(iFrame,iMarble,iHyp)=dWeightImprobable;
-%                     continue
-%                 end
-%                weights(iFrame,iMarble,iHyp) = 1/(dvec*dvec');
+                dDistanceCentroids = [xDetected,yDetected] - [matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2)];
+                weights(iFrame,iMarble,iHyp) = 1/(dvec*dvec');
                             
                 % print hypohtesis details
                 if bdebugAllHypothesis > 0
-%                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d weigth %.8f\n',iFrame,iMarble,iHyp,...
-%                        matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
-%                        trackstate(iFrame,iMarble,iHyp),weights(iFrame,iMarble,iHyp));
-                    fprintf('Frame %d, Marble %d Hyp %d avgHistDetected %f avgHistogramHyp %f state %d weigth %.8f\n',iFrame,iMarble,iHyp,...
-                        mean(histHypothesis),mean(histDetected),...
-                        trackstate(iFrame,iMarble,iHyp),weights(iFrame,iMarble,iHyp));
-
+                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d\n avgHistDetected %f avgHistogramHyp %f weight %.8f\n',iFrame,iMarble,iHyp,...
+                        matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
+                        trackstate(iFrame,iMarble,iHyp),...
+                        mean(histHypothesis),mean(histDetected),weights(iFrame,iMarble,iHyp));
 
     %                    %{                %    figure(debugFigure)
     %                     hold on

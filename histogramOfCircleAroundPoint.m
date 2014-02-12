@@ -18,6 +18,6 @@ end
 
 function normalised_histogram = normaliseHistogram(histogram, binCenters)
 % This function normalises a histogram to sum to 1.
-    dx = diff(binCenters(1:2));
-    normalised_histogram = histogram/sum(histogram*dx);
+dx = diff(binCenters(1:2));
+normalised_histogram = histogram/sum(histogram*dx);
 end

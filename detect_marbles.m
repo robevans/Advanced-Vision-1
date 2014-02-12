@@ -40,6 +40,7 @@ for i = 1 : num_Images
   %Extract marbles from image
   %matMarbles is an matrix, column 1 is x, column 2 is y
   %columns 3 is radius for each marbles
+  %columns 4 to (256+4) are the histogram of the marble
   %each rows has a detected object (hopefully a marble)
   %n_detected is the number of detected marbles
   [matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
@@ -56,9 +57,10 @@ for i = 1 : num_Images
     end
     
     %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  
+    pause(0.3)
   end
 
-      pause(0.3)
+
 end
 
 % show positions

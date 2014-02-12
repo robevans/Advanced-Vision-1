@@ -8,8 +8,10 @@ RG_chromaticity_sum = sum(chromaticity_image(:,:,1:2),3) / 2;
 
 % Extract circle pixels
 [rows, cols, ~] = size(RG_chromaticity_sum);
-[xx,yy] = ndgrid( (1:rows)-x, (1:cols)-y );
+[xx,yy] = ndgrid( (1:rows)-y, (1:cols)-x );
 mask = (xx.^2 + yy.^2)<radius^2;
+
+imshow(uint8(double(rgb2gray(RGBimage)).* mask));
 
 % Get histogram of circle pixels and normalise it
 [h, c] = imhist(RG_chromaticity_sum(mask));
@@ -19,5 +21,5 @@ end
 function normalised_histogram = normaliseHistogram(histogram, binCenters)
 % This function normalises a histogram to sum to 1.
 dx = diff(binCenters(1:2));
-normalised_histogram = histogram/sum(histogram*dx);
+normalised_histogram = ( histogram/sum(histogram*dx) ) / 255;
 end

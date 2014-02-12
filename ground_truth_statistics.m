@@ -1,12 +1,19 @@
-function [ success ] = ground_truth_statistics( directory, Tracking_marbles )
+function [ success ] = ground_truth_statistics( directory, Tracking_marbles, marblesWithIDs )
 %Function ground_truth_statistics
 %AV 1 Practical 1 20140204
 %This function compares ground truth statistics in getSeq1.mat file
 %to statistics obtained by the program as output from tracking marbles.
+%
 %Input: directory - Directory where ground file is located
+%
 %       Tracking_marbles - A struct containing frames and for each frame
 %       and (x,y) coordinates of detected marbles
+%
+%       marblesWithIDs - A matrix with centre x,y and marble ids for each
+%       frame.
+%
 %Output: success - True if there was no error
+%
 %Portions of code come from showgt where the ground truth file is used to
 %display trajectories
 
@@ -39,6 +46,7 @@ load(gtfile_name);
 
 for frame = 1 : num_Images  % loop over all frames
     
+    %% Count number of detections within 10 pixels of ground truth, and average distance of those detections.
     for marblenum=1:size(new_marbles_comingFromRight,2)       % loop over the individual marbles coming from the right
         index_a=find(new_marbles_comingFromRight(marblenum).frame_numbers(:)==frame); % get index in full framelist for current frame
         if ~isempty(index_a)
@@ -52,7 +60,10 @@ for frame = 1 : num_Images  % loop over all frames
                 y_detected=Tracking_marbles(index_detected).ycenter;
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
-                        matGroundTruthStats(frame,2)=matGroundTruthStats(frame,2)+1;
+                        % If it was detected within 10 pixels:
+                        % Count it
+                        matGroundTruthStats(frame,2) = matGroundTruthStats(frame,2) + 1;
+                        % Add the distance to the sum for averaging
                         sum_of_distances_from_ground_truth = sum_of_distances_from_ground_truth + abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2)));
                         break;
                     end
@@ -75,7 +86,10 @@ for frame = 1 : num_Images  % loop over all frames
                 y_detected=Tracking_marbles(index_detected).ycenter;
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
-                        matGroundTruthStats(frame,2)=matGroundTruthStats(frame,2)+1;
+                        % If it was detected within 10 pixels:
+                        % Count it
+                        matGroundTruthStats(frame,2) = matGroundTruthStats(frame,2) + 1;
+                        % Add the distance to the sum for averaging
                         sum_of_distances_from_ground_truth = sum_of_distances_from_ground_truth + abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2)));
                         break;
                     end
@@ -85,6 +99,24 @@ for frame = 1 : num_Images  % loop over all frames
         end
     end
     
+    %% Tracking statistics: count the number of correct pairings in consecutive frames.
+    %{
+    % For each marble detected in this frame...
+    marblesDetectedInThisFrame = marblesWithIDs(frame, :, :);
+    for marble = 1 : size(marblesDetectedInThisFrame,2)-1
+        if marblesDetectedInThisFrame(1, marble, 1) ~= 0 % Ignore marbles that were not detected in this frame
+            id_in_this_frame
+    %}
+    
+end
+
+%% Tracking statistics
+for marble = 1 : length(new_marbles_comingFromLeft)
+    for appearance = 1 : length(new_marbles_comingFromLeft(marble))
+        
+        
+        
+    end
 end
 
 for i=1:length(matGroundTruthStats(:,1))

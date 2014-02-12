@@ -12,19 +12,19 @@ function [ success ] = run_practical1( directory )
 %[Images_marbles,success]=detect_marbles_adaptive(directory);
 [matMarbles,vecnDetected]=detect_marbles(directory,false);
 
-[Tracking_marbles,matMarblesPosition,nTrackedMarbles,success]=track_marbles(matMarbles,directory, vecnDetected);
+[Tracking_marbles,matMarblesPosition,nTrackedMarbles,success]=track_marbles(matMarbles, directory, vecnDetected);
 
 if (~success)
    return;
 end   
 
-success=display_tracking(directory,nTrackedMarbles,matMarblesPosition);
+success=display_tracking(directory, nTrackedMarbles, matMarblesPosition);
 
 if (~success)
     return;
 end    
 
-success=ground_truth_statistics(directory,Tracking_marbles);
+success=ground_truth_statistics(directory, Tracking_marbles, matMarblesPosition);
 if (~success)
     fprintf('Ground Truth statistics could not be calculated.');
     return;

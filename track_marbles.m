@@ -28,11 +28,11 @@ radius=10;
 % might be slower
 fCollisionVelocityLoss = 0.9;
 pstop=0.01;      % probability of stopping vertical motion %moved from 0.05 to 0.01
-pCollision=0.15;    % probability of bouncing at current state (overestimated), changed from 0.3 to 0.15
+pCollision=0.05;    % probability of bouncing at current state (overestimated), changed from 0.3 to 0.15
 pOutBounds=0.4;  %probability that the marbles goes off the frame
 %weight used when we detected something but the hypothesis said it was
 %out of bounds
-dWeightImprobable=0.0000001;
+dWeightImprobable=0.001;
 
 
 %Columns of matHypothesis, not used currently
@@ -56,7 +56,7 @@ nFrames=length(dir(strcat(directory,'*jpg')));
 
 %Debugging variables
 debugFigure=1; %Figure to draw on
-bdebugAllHypothesis=1; %Show all hypothesis
+bdebugAllHypothesis=0; %Show all hypothesis
 bdebugSelectedHypothesis=1; %Show selected hypothesis
 bdebugCleanTracking=1; %Show debug info for cleaning operations
 
@@ -71,7 +71,12 @@ matMarblesPosition=zeros(nFrames,nMaxMarbles,2);
 %6 - vx
 %7 - vy
 matState=zeros(nFrames,nMaxMarbles,nNumHypothesis,4);
-weights=zeros(nFrames,nMaxMarbles,nNumHypothesis);    % est. probability of state
+% est. probability of state, we keep two weights, one based on x and y
+% distance and another on bhattacharryya distance, 
+% the first column is for weighted average of both
+% the second for the vector based
+% the third for the bhattacharryya one
+weights=zeros(nFrames,nMaxMarbles,nNumHypothesis,3);
 trackstate=zeros(nFrames,nMaxMarbles,nNumHypothesis); % state in each marble, hyp and frame
 
 nSamplesHypothesis=10;
@@ -97,7 +102,9 @@ for iFrame = 1 : nFrames
           for iHyp=1:nNumHypothesis
               for i2Frame=1:nFrames
                 matState(i2Frame,iMarble,iHyp,:) = [floor(iColumns*rand(1)),floor(iRows*rand(1)),0,0]';
-                weights(i2Frame,iMarble,iHyp)=1/nNumHypothesis;
+                weights(i2Frame,iMarble,iHyp,1)=1/nNumHypothesis;
+                weights(i2Frame,iMarble,iHyp,2)=1/nNumHypothesis;
+                weights(i2Frame,iMarble,iHyp,3)=1/nNumHypothesis;
               end              
           end
       end
@@ -124,7 +131,7 @@ for iFrame = 1 : nFrames
             %marble_id
             idcount(iMarble)=0;
             for iHyp = 1 : nNumHypothesis    % generate sampling distribution
-                num=floor(nSamplesHypothesis*nNumHypothesis*weights(iFrame-1,iMarble,iHyp));  % number of samples to generate
+                num=floor(nSamplesHypothesis*nNumHypothesis*weights(iFrame-1,iMarble,iHyp,1));  % number of samples to generate
                 if num > 0
                     matIdent(idcount(iMarble)+1:idcount(iMarble)+num,iMarble) = iHyp*ones(1,num);
                     idcount(iMarble)=idcount(iMarble)+num;
@@ -227,26 +234,28 @@ for iFrame = 1 : nFrames
             %only if we detected something and if the hypothesis says it is
             %not out of bounds.
             if xDetected~=0 && yDetected~=0 && trackstate(iFrame,iMarble,iHyp)==4
-                weights(iFrame,iMarble,iHyp) = dWeightImprobable;
+                weights(iFrame,iMarble,iHyp,2) = dWeightImprobable;                
+                weights(iFrame,iMarble,iHyp,3) = dWeightImprobable;                
             elseif xDetected~=0 && yDetected~=0        
                 %Get the histogram for the hypothesis
                 histHypothesis=histogramOfCircleAroundPoint(matState(iFrame,iMarble,iHyp,1),...
                     matState(iFrame,iMarble,iHyp,2),radius,imgFrame);
                 dDistanceHistograms=bhattacharyya_distance(histDetected,histHypothesis);
-%                weights(iFrame,iMarble,iHyp) = 1/dDistanceHistograms;
+                weights(iFrame,iMarble,iHyp,3) = (1-dDistanceHistograms)+dWeightImprobable;
                 
 %This distance is proportional to the distance between the detection and
 %the hypothesis location, the greater the distance, the weight goes much
 %lower
                 dDistanceCentroids = [xDetected,yDetected] - [matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2)];
-                weights(iFrame,iMarble,iHyp) = 1/(dvec*dvec');
+                weights(iFrame,iMarble,iHyp,2) = 1/(dDistanceCentroids*dDistanceCentroids');
                             
                 % print hypohtesis details
                 if bdebugAllHypothesis > 0
-                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d\n avgHistDetected %f avgHistogramHyp %f weight %.8f\n',iFrame,iMarble,iHyp,...
+                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d\n avgHistDetected %f avgHistogramHyp %f BhaWeight %.8f VecWeight %.8f\n',iFrame,iMarble,iHyp,...
                         matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
                         trackstate(iFrame,iMarble,iHyp),...
-                        mean(histHypothesis),mean(histDetected),weights(iFrame,iMarble,iHyp));
+                        mean(histHypothesis),mean(histDetected),...
+                        weights(iFrame,iMarble,iHyp,3),weights(iFrame,iMarble,iHyp,2));
 
     %                    %{                %    figure(debugFigure)
     %                     hold on
@@ -263,14 +272,25 @@ for iFrame = 1 : nFrames
                 %We are tracking something that is not on the screen
                 %so it if out of bounds
                 if trackstate(iFrame,iMarble,iHyp)==4
-                    weights(iFrame,iMarble,iHyp)=1;
+                    weights(iFrame,iMarble,iHyp,2)=1;
+                    weights(iFrame,iMarble,iHyp,3)=dWeightImprobable;
                 elseif iFrame~=1
-                    weights(iFrame,iMarble,iHyp)=dWeightImprobable;
+                    weights(iFrame,iMarble,iHyp,2)=dWeightImprobable;
+                    weights(iFrame,iMarble,iHyp,3)=dWeightImprobable;                    
                 end
             elseif iFrame~=1
-                weights(iFrame,iMarble,iHyp) = dWeightImprobable;
+                weights(iFrame,iMarble,iHyp,2) = dWeightImprobable;
+                weights(iFrame,iMarble,iHyp,3) = dWeightImprobable;
             end
-            
+        %Check that the weights were set 
+        if weights(iFrame,iMarble,iHyp,2)==0 || weights(iFrame,iMarble,iHyp,3)==0
+            error('track_marbles error. weights not set. Frame %d iMarble %d iHyp %d\n',iFrame,iMarble,iHyp);
+        end
+        if bdebugAllHypothesis
+            fprintf('Frame %d iMarble %d iHyp %d weight(1) %.7f weight(2 %.7f weight(3) %.7f\n',...
+                iFrame,iMarble,iHyp,weights(iFrame,iMarble,iHyp,1),weights(iFrame,iMarble,iHyp,2),...
+                weights(iFrame,iMarble,iHyp,3));
+        end
   end
   end
   
@@ -278,16 +298,24 @@ for iFrame = 1 : nFrames
   for iMarble=1:max(nTrackedMarbles,vecnDetected(iFrame))
         % rescale new hypothesis weights
         
-        totalw=sum(weights(iFrame,iMarble,:));
+        totalw=sum(weights(iFrame,iMarble,:,2));
 %         %If all hypothesis failed, the marble probably is out of bounds
 %         if totalw==0
 %             totalw=0.0000001;
 %         end
-            
-        weights(iFrame,iMarble,:)=weights(iFrame,iMarble,:)/totalw;
+        if isnan(totalw)
+            error('track_marbles error. total vector distance weight is nan.\n');
+        end
+        weights(iFrame,iMarble,:,2)=weights(iFrame,iMarble,:,2)/totalw;
+        totalw=sum(weights(iFrame,iMarble,:,3));
+        if isnan(totalw)
+            error('track_marbles error. Total bhattacharrya weight is nand.\n');
+        end
+        weights(iFrame,iMarble,:,3)=weights(iFrame,iMarble,:,3)/totalw;
+        weights(iFrame,iMarble,:,1)=(0.6*weights(iFrame,iMarble,:,2)+0.4*weights(iFrame,iMarble,:,3))/2;        
         
         % select top hypothesis to draw
-        subset=weights(iFrame,iMarble,:);
+        subset=weights(iFrame,iMarble,:,1);
         top = find(subset == max(subset));
         if length(top)>1
             top=top(1);
@@ -297,10 +325,10 @@ for iFrame = 1 : nFrames
         %If the winning hypothesis says that the marble is out of bounds
         %then we don't add coordinates, we don't really track out of bounds
         %marbles.
-        if trackstate(iFrame,iMarble,top)==4 || weights(iFrame,iMarble,top)<0.009
-            if weights(iFrame,iMarble,top)<0.009
-                fprintf('Weight is about chance. Not adding to tracking. Weight %.7f\n',weights(iFrame,iMarble,top));
-            end
+        if trackstate(iFrame,iMarble,top)==4 %|| weights(iFrame,iMarble,top,1)<(1/nNumHypothesis)
+%            if weights(iFrame,iMarble,top,1)<(1/nNumHypothesis)
+%                fprintf('Weight is about chance. Not adding to tracking. Weight %.7f\n',weights(iFrame,iMarble,top,1));
+%            end
             continue;
         end
         

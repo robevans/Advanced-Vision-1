@@ -43,8 +43,11 @@ for i = 1 : num_Images
   %columns 4 to (256+4) are the histogram of the marble
   %each rows has a detected object (hopefully a marble)
   %n_detected is the number of detected marbles
-  [matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
-
+  [success, matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
+  if ~success
+      return;
+  end
+  
   % Add the extracted background to the existing background, so that it
   % adapts to new conditions.
   imgBackGround = averageInExtractedBackground(imgBackGround, extracted_background);

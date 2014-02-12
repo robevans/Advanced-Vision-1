@@ -1,4 +1,4 @@
-function [matMarbles,n_detected,new_background]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,bShowImages)
+function [success,matMarbles,n_detected,new_background]=extract_marbles(Imwork,Imback,fig1,fig2,fig3,bShowImages)
 %Function extract_marbles
 %AV Practical 1
 %Extract marbles from image
@@ -12,6 +12,7 @@ function [matMarbles,n_detected,new_background]=extract_marbles(Imwork,Imback,fi
 %       used
 %       index  - Current image index
 %Output:
+%       success - true if successful
 %       matCentres contains the centres of the marbles in x, y coordinates
 %       plus the radii
 %       radii is an array containing the radius of each marble as is indexed by
@@ -26,6 +27,7 @@ min_radius=3;
 max_radius=30;
 max_eccentricity=0.9;
 max_circularity=2;
+success=1;
 
 %%% Independent Background subtractions and adaptive thresholding
 %   for RGB, greyscale and Chromaticity channels:
@@ -183,7 +185,7 @@ for i=1:length(stats_detected_objects)
     matMarbles(i,3)=sqrt(stats_detected_objects(i).Area/pi);
     %Get the histogram
     matMarbles(i,4:(256+3))=(histogramOfCircleAroundPoint(matMarbles(i,1),matMarbles(i,2),matMarbles(i,3),Imwork))';
-    if ~isnumber(matMarbled(i,4:(256+3)))
+    if isnan(matMarbles(i,4:(256+3)))
         fprintf('Error. histogramOfCircleAroundPoint returned NaN.\n');
         success=0;
     end

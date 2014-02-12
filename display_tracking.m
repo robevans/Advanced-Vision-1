@@ -28,8 +28,8 @@ for iMarble=1:nTrackedMarbles
     
     sColor=sColors(mod(iMarble,length(sColors)-1)+1);
     idxValidPositions=find(matMarblesPosition(:,iMarble,1)>0);
-    xDetected=matMarblesPosition(idxValidPositions);
-    yDetected=matMarblesPosition(idxValidPositions);
+    xDetected=matMarblesPosition(idxValidPositions,iMarble,1);
+    yDetected=matMarblesPosition(idxValidPositions,iMarble,2);
     
     plot(xDetected,yDetected,'Color',sColor,'LineStyle','-','Marker','*');
 end

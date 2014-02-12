@@ -23,6 +23,8 @@ num_Images=length(dir(strcat(directory,'*jpg')));
 %within 10 pixels
 matGroundTruthStats=zeros(num_Images,2);
 
+sum_of_distances_from_ground_truth = 0;
+
 % load ground truth
 %This file loads the following variables
 %new_marbles_comingFromRight
@@ -51,6 +53,7 @@ for frame = 1 : num_Images  % loop over all frames
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
                         matGroundTruthStats(frame,2)=matGroundTruthStats(frame,2)+1;
+                        sum_of_distances_from_ground_truth = sum_of_distances_from_ground_truth + abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2)));
                         break;
                     end
                     
@@ -73,6 +76,7 @@ for frame = 1 : num_Images  % loop over all frames
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
                         matGroundTruthStats(frame,2)=matGroundTruthStats(frame,2)+1;
+                        sum_of_distances_from_ground_truth = sum_of_distances_from_ground_truth + abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2)));
                         break;
                     end
                     
@@ -82,12 +86,15 @@ for frame = 1 : num_Images  % loop over all frames
     end
     
 end
+
 for i=1:length(matGroundTruthStats(:,1))
     fprintf('Frame %d. Images in Ground Truth: %d. Detected marbles within range: %d. Ratio %.6f\n',i,matGroundTruthStats(i,1),matGroundTruthStats(i,2),matGroundTruthStats(i,2)/matGroundTruthStats(i,1));
 end
 
 fprintf('Final Statistics.\nRatio of detected marbles/ground truth:%.6f\n\n',sum(matGroundTruthStats(:,2))/sum(matGroundTruthStats(:,1)));
 success=true;
+
+mean_distances_from_ground_truth = sum_of_distances_from_ground_truth / sum(matGroundTruthStats(i,2));
 
 end
 

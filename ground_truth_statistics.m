@@ -99,34 +99,76 @@ for frame = 1 : num_Images  % loop over all frames
         end
     end
     
-    %% Tracking statistics: count the number of correct pairings in consecutive frames.
-    %{
-    % For each marble detected in this frame...
-    marblesDetectedInThisFrame = marblesWithIDs(frame, :, :);
-    for marble = 1 : size(marblesDetectedInThisFrame,2)-1
-        if marblesDetectedInThisFrame(1, marble, 1) ~= 0 % Ignore marbles that were not detected in this frame
-            id_in_this_frame
-    %}
-    
 end
 
-%% Tracking statistics
-for marble = 1 : length(new_marbles_comingFromLeft)
-    for appearance = 1 : length(new_marbles_comingFromLeft(marble))
-        
-        
-        
+n_correct_pairings = 0;
+n_erroneous_pairings = 0;
+
+%% Tracking statistics: Count the number of correct and erroneous pairings out of the marbles that we detected.
+for marbleSet = 1 : 2
+    if marbleSet == 1
+        ground_truth_marbles = new_marbles_comingFromLeft;
+    else
+        ground_truth_marbles = new_marbles_comingFromRight;
+    end
+    for marble = 1 : length(ground_truth_marbles)
+            for appearance = 1 : length(ground_truth_marbles(marble).frame_numbers)-1
+                % Ground truth information for the marble in CURRENT frame
+                gt_x = ground_truth_marbles(marble).row_of_centers(appearance);
+                gt_y = ground_truth_marbles(marble).col_of_centers(appearance);
+                frame = ground_truth_marbles(marble).frame_numbers(appearance);
+                
+                % Check if we detected that marble within 10 pixels in CURRENT frame
+                detectedMarbles = marblesWithIDs(frame,:,:);
+                for ith_detected = 1 : size(detectedMarbles, 2)
+                    x_detected = detectedMarbles(1, ith_detected, 1);
+                    y_detected = detectedMarbles(1, ith_detected, 2);
+                    if ~(x_detected == 0 && y_detected == 0)
+                        if (iDetectionRadius >= abs(sqrt(((x_detected-gt_x)^2 + (y_detected-gt_y)^2))))
+                            % If we did detect it within 10 pixels:
+                            first_assigned_label = ith_detected;
+                        end
+                    end
+                end
+                
+                % Ground truth information for the same marble in the NEXT frame
+                gt_x = ground_truth_marbles(marble).row_of_centers(appearance+1);
+                gt_y = ground_truth_marbles(marble).col_of_centers(appearance+1);
+                frame = ground_truth_marbles(marble).frame_numbers(appearance+1);
+                
+                % Check if we detected that marble within 10 pixels in the NEXT frame
+                detectedMarbles = marblesWithIDs(frame,:,:);
+                for ith_detected = 1 : size(detectedMarbles, 2)
+                    x_detected = detectedMarbles(1, ith_detected, 1);
+                    y_detected = detectedMarbles(1, ith_detected, 2);
+                    if ~(x_detected == 0 && y_detected == 0)
+                        if (iDetectionRadius >= abs(sqrt(((x_detected-gt_x)^2 + (y_detected-gt_y)^2))))
+                            % If we did detect it within 10 pixels:
+                            second_assigned_label = ith_detected;
+                        end
+                    end
+                end
+                
+                % If we gave the marble identical labels in consecutive
+                % frames then it was tracked properly.
+                if first_assigned_label == second_assigned_label
+                    % We have a correct pairing by the tracker!
+                    n_correct_pairings = n_correct_pairings + 1;
+                else
+                    % Oh no!
+                    n_erroneous_pairings = n_erroneous_pairings + 1;
+                end
+                
+            end
     end
 end
 
-for i=1:length(matGroundTruthStats(:,1))
-    fprintf('Frame %d. Images in Ground Truth: %d. Detected marbles within range: %d. Ratio %.6f\n',i,matGroundTruthStats(i,1),matGroundTruthStats(i,2),matGroundTruthStats(i,2)/matGroundTruthStats(i,1));
-end
+fprintf('\nDetection Statistics:\n  Number of marbles in ground truth: %i\n  Ratio of detected marbles/ground truth: %i/%i\n\n',sum(matGroundTruthStats(:,1)),sum(matGroundTruthStats(:,2)),sum(matGroundTruthStats(:,1)));
 
-fprintf('Final Statistics.\nRatio of detected marbles/ground truth:%.6f\n\n',sum(matGroundTruthStats(:,2))/sum(matGroundTruthStats(:,1)));
+fprintf('Tracking Statistics:\n  Percentage of detected marbles that were correctly tracked in consecutive frames: %.2f%%\n  Number of correct pairings: %i\n  Number of erroneous pairings: %i\n\n',n_correct_pairings/(n_correct_pairings+n_erroneous_pairings)*100,n_correct_pairings,n_erroneous_pairings);
+
+mean_distances_from_ground_truth = sum_of_distances_from_ground_truth / sum(matGroundTruthStats(:,2));
+
 success=true;
-
-mean_distances_from_ground_truth = sum_of_distances_from_ground_truth / sum(matGroundTruthStats(i,2));
-
 end
 

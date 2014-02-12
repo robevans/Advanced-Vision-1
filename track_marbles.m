@@ -378,7 +378,7 @@ for iFrame = 1 : nFrames
                 
 end
 
-%Filter out objects detected less than a number of frames
+%Filter out objects detected for less than a number of frames
 for iMarble=1:nMaxMarbles
     if length(matMarblesPosition(:,iMarble,1))<nMinimumFramesVisible
         if bdebugCleanTracking

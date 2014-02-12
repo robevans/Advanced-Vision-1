@@ -1,4 +1,3 @@
-
 function [ success ] = run_practical1( directory )
 %AV Practical 1
 %Created on January 30, 2014

@@ -66,7 +66,7 @@ matMarblesPosition=zeros(nFrames,nMaxMarbles,2);
 %6 - vx
 %7 - vy
 matState=zeros(nFrames,nMaxMarbles,nNumHypothesis,4);
-weights=zeros(nFrames,nNumHypothesis,nMaxMarbles);    % est. probability of state
+weights=zeros(nFrames,nMaxMarbles,nNumHypothesis);    % est. probability of state
 trackstate=zeros(nFrames,nMaxMarbles,nNumHypothesis); % state in each marble, hyp and frame
 
 nSamplesHypothesis=10;
@@ -89,7 +89,7 @@ for iFrame = 1 : nFrames
           for iHyp=1:nNumHypothesis
               for i2Frame=1:nFrames
                 matState(i2Frame,iMarble,iHyp,:) = [floor(iColumns*rand(1)),floor(iRows*rand(1)),0,0]';
-                weights(i2Frame,iHyp,iMarble)=1/nNumHypothesis;
+                weights(i2Frame,iMarble,iHyp)=1/nNumHypothesis;
               end              
           end
       end
@@ -116,7 +116,7 @@ for iFrame = 1 : nFrames
             %marble_id
             idcount(iMarble)=0;
             for iHyp = 1 : nNumHypothesis    % generate sampling distribution
-                num=floor(nSamplesHypothesis*nNumHypothesis*weights(iFrame-1,iHyp,iMarble));  % number of samples to generate
+                num=floor(nSamplesHypothesis*nNumHypothesis*weights(iFrame-1,iMarble,iHyp));  % number of samples to generate
                 if num > 0
                     matIdent(idcount(iMarble)+1:idcount(iMarble)+num,iMarble) = iHyp*ones(1,num);
                     idcount(iMarble)=idcount(iMarble)+num;
@@ -130,7 +130,7 @@ for iFrame = 1 : nFrames
  matDetectedMarbles = matMarbles{iFrame};
     
   for iMarble=1:max([1,nTrackedMarbles,vecnDetected(iFrame)])
-        if nTrackedMarbles<=vecnDetected(iFrame)
+        if iMarble<=vecnDetected(iFrame)
             xDetected = matDetectedMarbles(iMarble,1);
             yDetected = matDetectedMarbles(iMarble,2);
         else
@@ -215,19 +215,28 @@ for iFrame = 1 : nFrames
             %only if we detected something
             if xDetected~=0 && yDetected~=0
                 dvec = [xDetected,yDetected] - [matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2)];
-                weights(iFrame,iHyp,iMarble) = 1/(dvec*dvec');
+                weights(iFrame,iMarble,iHyp) = 1/(dvec*dvec');
+                
             
                 % draw some samples over one image
                 if bdebugAllHypothesis > 0
-                    figure(debugFigure)
-                    hold on
-
-                    sColor=sColors(trackstate(iFrame,iMarble,iHyp));                
-                    rectangle('Position',[matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),radius,radius],'Curvature',[1,1],...
-                            'EdgeColor',sColor);
-                end   
+                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f weigth %.8f\n',iFrame,iMarble,iHyp,...
+                        matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
+                        weights(iFrame,iMarble,iHyp));
+                    
+    %                    %{                %    figure(debugFigure)
+    %                     hold on
+    % 
+    %                     sColor=sColors(trackstate(iFrame,iMarble,iHyp));                
+    %                     rectangle('Position',[matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),radius,radius],'Curvature',[1,1],...
+    %                             'EdgeColor',sColor);
+    %                         }%
+                end  
+                %Correct for observed data.
+                matState(iFrame,iMarble,iHyp,1)=xDetected;
+                matState(iFrame,iMarble,iHyp,2)=yDetected;
             elseif iFrame~=1
-                weights(iFrame,iHyp,iMarble) = weights(iFrame-1,iHyp,iMarble);
+                weights(iFrame,iMarble,iHyp) = weights(iFrame-1,iMarble,iHyp);
             end
             
   end
@@ -237,11 +246,11 @@ for iFrame = 1 : nFrames
   for iMarble=1:max(nTrackedMarbles,vecnDetected(iFrame))
         % rescale new hypothesis weights
         
-        totalw=sum(weights(iFrame,:,iMarble)');
-        weights(iFrame,:,iMarble)=weights(iFrame,:,iMarble)/totalw;
+        totalw=sum(weights(iFrame,iMarble,:));
+        weights(iFrame,iMarble,:)=weights(iFrame,iMarble,:)/totalw;
         
         % select top hypothesis to draw
-        subset=weights(iFrame,:,iMarble);
+        subset=weights(iFrame,iMarble,:);
         top = find(subset == max(subset));
         if length(top)>1
             top=top(1);
@@ -257,11 +266,15 @@ for iFrame = 1 : nFrames
 %        trackstate(iFrame,iMarble,top);
         % display final top hypothesis
         if bdebugSelectedHypothesis > 0
+            fprintf('Added to tracking. Frame: %d. iMarble %d. x:%d y:%d state:%d\n',iFrame,iMarble,...
+                matMarblesPosition(iFrame,iMarble,1),matMarblesPosition(iFrame,iMarble,2),...
+                trackstate(iFrame,iMarble,top));
             figure(debugFigure)
             hold on
-            sColor=sColors(trackstate(iFrame,iMarble,iHyp));  
-            rectangle('Position',[matState(iFrame,iMarble,top,1),matState(iFrame,iMarble,top,2),radius,radius],'Curvature',[1,1],...
-                        'Edgecolor',sColor);
+            sColor=sColors(trackstate(iFrame,iMarble,top));  
+            rectangle('Position',[matMarblesPosition(iFrame,iMarble,1),...
+                matMarblesPosition(iFrame,iMarble,2),radius,radius],...
+                'Curvature',[1,1],'Edgecolor',sColor);
         end               
  
   end

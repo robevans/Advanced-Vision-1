@@ -4,7 +4,7 @@ function [ ParameterValue ] = funcConfig( sParameterName )
 %Useful to keep configuration variables in one place
 
 switch sParameterName
-    case 'nImagesAverageBackground'        
+    case 'nImagesAverageBackground'
         ParameterValue = 10;
     case 'sDirectory'
         ParameterValue = './SEQ1/';
@@ -13,8 +13,7 @@ switch sParameterName
     case 'nMaxMarbles'
         ParameterValue = 18;
     case 'nNumHypothesis'
-        ParameterValue=100;        
-end;    
+        ParameterValue=100;
+end;
 
 end
-

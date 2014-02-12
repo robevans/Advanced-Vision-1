@@ -1,7 +1,7 @@
 
 function [ success ] = run_practical1( directory )
 %AV Practical 1
-%January 30, 2014       Creation
+%Created on January 30, 2014
 %function run_practical1
 %   This function runs the Advanced Vision practical 1
 %Input : directory - the directory name where images are
@@ -11,11 +11,8 @@ function [ success ] = run_practical1( directory )
 %Francisco Aguirre
 
 %[Images_marbles,success]=detect_marbles_adaptive(directory);
-[matMarbles,vecnDetected,success]=detect_marbles(directory,false);
+[matMarbles,vecnDetected]=detect_marbles(directory,false);
 
-if (~success)
-    return;
-end
 %TODO remove after completion
 local_matMarbles=matMarbles;
 local_directory=directory;

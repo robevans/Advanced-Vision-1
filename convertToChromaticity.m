@@ -1,5 +1,6 @@
 function imageChromaticity = convertToChromaticity(imageRGB)
-% Converts to chromaticity
+% This function converts an RGB image to chromaticity coordinates, plus a
+% fourth channel containing saturation.
 imageChromaticity = zeros(size(imageRGB));
 rgbsum = sum(imageRGB,3);
 imageChromaticity(:,:,1) = double(imageRGB(:,:,1)) ./ rgbsum;

@@ -1,7 +1,7 @@
 function [success] = funcCalculateAdaptiveBackground (sDirectory, bForceRecalculation, bShowPlots)
 %function funcCalculateAdaptiveBackground
 %AV 1 Practical 1 20140201
-%This function calculates a background image using an adaptive method
+%This function calculates a background image using a probabilistic method
 %using chromaticity
 %It takes the number of images to use from the funcConfig method parameter
 %'nImagesAverageBackground'
@@ -32,7 +32,7 @@ end;
 
 iNumBackgroundImages=funcConfig('nImagesAverageBackground');
 
-% use images to estimate statistics
+% use N images to estimate initial statistics of background model.
 for i = 1 : iNumBackgroundImages
     
     % load image

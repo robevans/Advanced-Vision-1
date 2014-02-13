@@ -312,7 +312,7 @@ for iFrame = 1 : nFrames
             error('track_marbles error. Total bhattacharrya weight is nand.\n');
         end
         weights(iFrame,iMarble,:,3)=weights(iFrame,iMarble,:,3)/totalw;
-        weights(iFrame,iMarble,:,1)=(0.6*weights(iFrame,iMarble,:,2)+0.4*weights(iFrame,iMarble,:,3))/2;
+        weights(iFrame,iMarble,:,1)=(1.2*weights(iFrame,iMarble,:,2)+0.8*weights(iFrame,iMarble,:,3))/2;
         
         % select top hypothesis to draw
         subset=weights(iFrame,iMarble,:,1);

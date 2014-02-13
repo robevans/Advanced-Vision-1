@@ -165,10 +165,9 @@ end
 
 fprintf('\nDetection Statistics:\n  Number of marbles in ground truth: %i\n  Ratio of detected marbles/ground truth: %i/%i\n\n',sum(matGroundTruthStats(:,1)),sum(matGroundTruthStats(:,2)),sum(matGroundTruthStats(:,1)));
 
+mean_distances_from_ground_truth = sum_of_distances_from_ground_truth / sum(matGroundTruthStats(:,2))
+
 fprintf('Tracking Statistics:\n  Percentage of detected marbles that were correctly tracked in consecutive frames: %.2f%%\n  Number of correct pairings: %i\n  Number of erroneous pairings: %i\n\n',n_correct_pairings/(n_correct_pairings+n_erroneous_pairings)*100,n_correct_pairings,n_erroneous_pairings);
-
-mean_distances_from_ground_truth = sum_of_distances_from_ground_truth / sum(matGroundTruthStats(:,2));
-
 success=true;
 end
 

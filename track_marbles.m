@@ -28,11 +28,12 @@ radius=10;
 % might be slower
 fCollisionVelocityLoss = 0.9;
 pstop=0.01;      % probability of stopping vertical motion %moved from 0.05 to 0.01
-pCollision=0.05;    % probability of bouncing at current state (overestimated), changed from 0.3 to 0.15
-pOutBounds=0.4;  %probability that the marbles goes off the frame
+pCollision=0.15;    % probability of bouncing at current state (overestimated), changed from 0.3 to 0.15
+pOutBounds=0.05;  %probability that the marbles goes off the frame
 %weight used when we detected something but the hypothesis said it was
 %out of bounds
-dWeightImprobable=0.001;
+dWeightImprobable=0.00001;
+dInitialVelocity=60;
 
 
 %Columns of matHypothesis, not used currently
@@ -57,8 +58,9 @@ nFrames=length(dir(strcat(directory,'*jpg')));
 %Debugging variables
 debugFigure=1; %Figure to draw on
 bdebugAllHypothesis=0; %Show all hypothesis
-bdebugSelectedHypothesis=1; %Show selected hypothesis
-bdebugCleanTracking=1; %Show debug info for cleaning operations
+bdebugSelectedHypothesis=0; %Show selected hypothesis
+bdebugCleanTracking=0; %Show debug info for cleaning operations
+bdebugiMarble=1; %If set to a particular iMarble, debug trajectory
 
 matMarblesPosition=zeros(nFrames,nMaxMarbles,2);
 
@@ -101,7 +103,7 @@ for iFrame = 1 : nFrames
       for iMarble=1:nMaxMarbles
           for iHyp=1:nNumHypothesis
               for i2Frame=1:nFrames
-                matState(i2Frame,iMarble,iHyp,:) = [floor(iColumns*rand(1)),floor(iRows*rand(1)),0,0]';
+                matState(i2Frame,iMarble,iHyp,:) = [floor(iColumns*rand(1)),floor(iRows*rand(1)),floor(dInitialVelocity*rand(1)),floor(dInitialVelocity*rand(1))]';
                 weights(i2Frame,iMarble,iHyp,1)=1/nNumHypothesis;
                 weights(i2Frame,iMarble,iHyp,2)=1/nNumHypothesis;
                 weights(i2Frame,iMarble,iHyp,3)=1/nNumHypothesis;
@@ -145,15 +147,6 @@ for iFrame = 1 : nFrames
  matDetectedMarbles = matMarbles{iFrame};
     
   for iMarble=1:max([1,nTrackedMarbles,vecnDetected(iFrame)])
-        if iMarble<=vecnDetected(iFrame)
-            xDetected = matDetectedMarbles(iMarble,1);
-            yDetected = matDetectedMarbles(iMarble,2);
-            histDetected = (matDetectedMarbles(iMarble,4:(3+256)))';
-        else
-            xDetected = 0;
-            yDetected = 0;
-            histDetected = 0;
-        end
 
   for iHyp = 1 : nNumHypothesis
 %      fprintf('Current marble %d. Current hyp %d\n',iMarble,iHyp);
@@ -162,7 +155,7 @@ for iFrame = 1 : nFrames
     if iFrame==1 % make a random vector
         % x and y are random within the image rows and columns
         % velocity and visibility are zero
-        vecCurrent = [floor(iColumns*rand(1)),floor(iRows*rand(1)),0,0]';
+        vecCurrent = [floor(iColumns*rand(1)),floor(iRows*rand(1)),floor(dInitialVelocity*rand(1)),floor(dInitialVelocity*rand(1))]';
     else
         iOldSample = matIdent(ceil(idcount(iMarble)*rand(1)),iMarble); % select which old sample
         vecCurrent(1) = matState(iFrame-1,iMarble,iOldSample,1);  % get its state vector
@@ -171,9 +164,9 @@ for iFrame = 1 : nFrames
         vecCurrent(4) = matState(iFrame-1,iMarble,iOldSample,4);
 
         % sample about this vector randomly
-        for n = 1 : 4
-            vecCurrent(n) = vecCurrent(n) + 1*randn(1);
-        end
+        for n = 1 : 2
+            vecCurrent(n) = vecCurrent(n) + 20*randn(1);
+        end            
     end
 
     % hypothesize next state
@@ -185,8 +178,8 @@ for iFrame = 1 : nFrames
             vecPredicted(3) = 0;
             vecPredicted(4) = 0;
             if trackstate(iFrame-1,iMarble,iHyp)==4
-                vecPredicted(1)=0;
-                vecPredicted(2)=0;
+                vecPredicted(1) = 0;
+                vecPredicted(2) = 0;
             end
             % stay in the same state it was before
             trackstate(iFrame,iMarble,iHyp)=trackstate(iFrame-1,iMarble,iHyp);
@@ -227,20 +220,45 @@ for iFrame = 1 : nFrames
             end
         end
     end
-            
+            %the marble can't be out of the screen if we assume it is
+            %moving
+            if vecPredicted(1)<0
+                vecPredicted(1)=10;
+            elseif vecPredicted(1)>640
+                vecPredicted(1)=630;
+            end
+            if vecPredicted(2)<0
+                vecPredicted(2)=10;
+            elseif vecPredicted(2)>480
+                vecPredicted(2)=470;
+            end
             matState(iFrame,iMarble,iHyp,:) = vecPredicted;
+
+            if iMarble<=vecnDetected(iFrame)
+                %choose a detected object at random
+%                iLuckyMarble=ceil(vecnDetected(iFrame)*rand(1));
+                xDetected = matDetectedMarbles(iMarble,1);
+                yDetected = matDetectedMarbles(iMarble,2);
+                histDetected = (matDetectedMarbles(iMarble,4:(3+256)))';
+            else
+                xDetected = 0;
+                yDetected = 0;
+                histDetected = 0;
+            end
 
             % weight hypothesis by distance from observed data
             %only if we detected something and if the hypothesis says it is
             %not out of bounds.
-            if xDetected~=0 && yDetected~=0 && trackstate(iFrame,iMarble,iHyp)==4
-                weights(iFrame,iMarble,iHyp,2) = dWeightImprobable;                
-                weights(iFrame,iMarble,iHyp,3) = dWeightImprobable;                
-            elseif xDetected~=0 && yDetected~=0        
+            if xDetected~=0 && yDetected~=0 && trackstate(iFrame,iMarble,iHyp)~=4       
                 %Get the histogram for the hypothesis
                 histHypothesis=histogramOfCircleAroundPoint(matState(iFrame,iMarble,iHyp,1),...
                     matState(iFrame,iMarble,iHyp,2),radius,imgFrame);
                 dDistanceHistograms=bhattacharyya_distance(histDetected,histHypothesis);
+                %We can get a nan in an histogram if it is out of bounds of
+                %the image.
+                if isnan(dDistanceHistograms)
+                    dDistanceHistograms=1;
+                end
                 weights(iFrame,iMarble,iHyp,3) = (1-dDistanceHistograms)+dWeightImprobable;
                 
 %This distance is proportional to the distance between the detection and
@@ -249,21 +267,24 @@ for iFrame = 1 : nFrames
                 dDistanceCentroids = [xDetected,yDetected] - [matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2)];
                 weights(iFrame,iMarble,iHyp,2) = 1/(dDistanceCentroids*dDistanceCentroids');
                             
-                % print hypohtesis details
+                % print hypothesis details
                 if bdebugAllHypothesis > 0
-                    fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d\n avgHistDetected %f avgHistogramHyp %f BhaWeight %.8f VecWeight %.8f\n',iFrame,iMarble,iHyp,...
-                        matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
-                        trackstate(iFrame,iMarble,iHyp),...
-                        mean(histHypothesis),mean(histDetected),...
-                        weights(iFrame,iMarble,iHyp,3),weights(iFrame,iMarble,iHyp,2));
+                    if bdebugiMarble==0 || bdebugiMarble==iMarble
+                        fprintf('Frame %d, Marble %d Hyp %d x %f y %f state %d\n avgHistDetected %f avgHistogramHyp %f BhaWeight %.8f VecWeight %.8f\n',...
+                            iFrame,iMarble,iHyp,...
+                            matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),...
+                            trackstate(iFrame,iMarble,iHyp),...
+                            mean(histHypothesis),mean(histDetected),...
+                            weights(iFrame,iMarble,iHyp,3),weights(iFrame,iMarble,iHyp,2));
+            
+                            figure(debugFigure)
+                            hold on
+     
+                            sColor=sColors(trackstate(iFrame,iMarble,iHyp));                
+                            rectangle('Position',[matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),radius,radius],'Curvature',[1,1],...
+                                 'EdgeColor',sColor);
+                    end
 
-    %                    %{                %    figure(debugFigure)
-    %                     hold on
-    % 
-    %                     sColor=sColors(trackstate(iFrame,iMarble,iHyp));                
-    %                     rectangle('Position',[matState(iFrame,iMarble,iHyp,1),matState(iFrame,iMarble,iHyp,2),radius,radius],'Curvature',[1,1],...
-    %                             'EdgeColor',sColor);
-    %                         }%
                 end  
                 %Correct for observed data
                 matState(iFrame,iMarble,iHyp,1)=xDetected;
@@ -271,49 +292,62 @@ for iFrame = 1 : nFrames
             elseif xDetected==0 && yDetected==0
                 %We are tracking something that is not on the screen
                 %so it if out of bounds
-                if trackstate(iFrame,iMarble,iHyp)==4
+                %So we assign a high probability to it being out of bounds.
+                if iMarble<=vecnDetected(iFrame) && trackstate(iFrame,iMarble,iHyp)==4
                     weights(iFrame,iMarble,iHyp,2)=1;
                     weights(iFrame,iMarble,iHyp,3)=dWeightImprobable;
-                elseif iFrame~=1
-                    weights(iFrame,iMarble,iHyp,2)=dWeightImprobable;
-                    weights(iFrame,iMarble,iHyp,3)=dWeightImprobable;                    
+%                 elseif iMarble<=vecnDetected(iFrame) && iFrame~=1
+%                     weights(iFrame,iMarble,iHyp,2)=dWeightImprobable;
+%                     weights(iFrame,iMarble,iHyp,3)=1;                    
                 end
             elseif iFrame~=1
                 weights(iFrame,iMarble,iHyp,2) = dWeightImprobable;
-                weights(iFrame,iMarble,iHyp,3) = dWeightImprobable;
+                weights(iFrame,iMarble,iHyp,3) = 1;
             end
         %Check that the weights were set 
         if weights(iFrame,iMarble,iHyp,2)==0 || weights(iFrame,iMarble,iHyp,3)==0
             error('track_marbles error. weights not set. Frame %d iMarble %d iHyp %d\n',iFrame,iMarble,iHyp);
         end
-        if bdebugAllHypothesis
-            fprintf('Frame %d iMarble %d iHyp %d weight(1) %.7f weight(2 %.7f weight(3) %.7f\n',...
-                iFrame,iMarble,iHyp,weights(iFrame,iMarble,iHyp,1),weights(iFrame,iMarble,iHyp,2),...
-                weights(iFrame,iMarble,iHyp,3));
-        end
   end
+  
+    % rescale new hypothesis weights
+
+    totalw=sum(weights(iFrame,iMarble,:,2));
+    %         %If all hypothesis failed, the marble probably is out of bounds
+    %         if totalw==0
+    %             totalw=0.0000001;
+    %         end
+    if isnan(totalw)
+    error('track_marbles error. total vector distance weight is nan.\n');
+    end
+    weights(iFrame,iMarble,:,2)=weights(iFrame,iMarble,:,2)/totalw;
+    totalw=sum(weights(iFrame,iMarble,:,3));
+    if isnan(totalw)
+    error('track_marbles error. Total bhattacharrya weight is nan.\n');
+    end
+    weights(iFrame,iMarble,:,3)=weights(iFrame,iMarble,:,3)/totalw;
+    weights(iFrame,iMarble,:,1)=(0.2*weights(iFrame,iMarble,:,3)+1.8*weights(iFrame,iMarble,:,2))/2;        
+
+    for i2Marble=1:nMaxMarbles
+        for i2Hyp=1:nNumHypothesis
+            if bdebugAllHypothesis
+                if bdebugiMarble==0 || bdebugiMarble==i2Marble
+                    fprintf('Frame %d iMarble %d iHyp %d x %f y %f state %f weight(1) %.7f weight(vec) %.7f weight(hist) %.7f\n',...
+                        iFrame,i2Marble,i2Hyp,...
+                        matState(iFrame,i2Marble,i2Hyp,1),matState(iFrame,i2Marble,i2Hyp,2),...
+                        trackstate(iFrame,i2Marble,i2Hyp),...
+                        weights(iFrame,i2Marble,i2Hyp,1),weights(iFrame,i2Marble,i2Hyp,2),...
+                        weights(iFrame,i2Marble,i2Hyp,3));
+                end
+            end
+        end
+    end
+
   end
   
         
   for iMarble=1:max(nTrackedMarbles,vecnDetected(iFrame))
-        % rescale new hypothesis weights
-        
-        totalw=sum(weights(iFrame,iMarble,:,2));
-%         %If all hypothesis failed, the marble probably is out of bounds
-%         if totalw==0
-%             totalw=0.0000001;
-%         end
-        if isnan(totalw)
-            error('track_marbles error. total vector distance weight is nan.\n');
-        end
-        weights(iFrame,iMarble,:,2)=weights(iFrame,iMarble,:,2)/totalw;
-        totalw=sum(weights(iFrame,iMarble,:,3));
-        if isnan(totalw)
-            error('track_marbles error. Total bhattacharrya weight is nand.\n');
-        end
-        weights(iFrame,iMarble,:,3)=weights(iFrame,iMarble,:,3)/totalw;
-        weights(iFrame,iMarble,:,1)=(0.6*weights(iFrame,iMarble,:,2)+0.4*weights(iFrame,iMarble,:,3))/2;        
-        
+
         % select top hypothesis to draw
         subset=weights(iFrame,iMarble,:,1);
         top = find(subset == max(subset));
@@ -341,16 +375,18 @@ for iFrame = 1 : nFrames
 %        trackstate(iFrame,iMarble,top);
         % display final top hypothesis
         if bdebugSelectedHypothesis > 0
-%            fprintf('Added to tracking. Frame: %d. iMarble %d. x:%d y:%d state:%d\n',iFrame,iMarble,...
-%                matMarblesPosition(iFrame,iMarble,1),matMarblesPosition(iFrame,iMarble,2),...
-%                trackstate(iFrame,iMarble,top));
-            figure(debugFigure)
-            hold on
-            sColor=sColors(trackstate(iFrame,iMarble,top));  
-            rectangle('Position',[matMarblesPosition(iFrame,iMarble,1),...
-                matMarblesPosition(iFrame,iMarble,2),radius,radius],...
-                'Curvature',[1,1],'Edgecolor',sColor);
-        end               
+            if bdebugiMarble>=0 && bdebugiMarble==iMarble
+                fprintf('Added to tracking. Frame: %d. iMarble %d. x:%d y:%d state:%d\n',iFrame,iMarble,...
+                    matMarblesPosition(iFrame,iMarble,1),matMarblesPosition(iFrame,iMarble,2),...
+                    trackstate(iFrame,iMarble,top));
+                figure(debugFigure)
+                hold on
+                sColor=sColors(trackstate(iFrame,iMarble,top));
+                rectangle('Position',[matMarblesPosition(iFrame,iMarble,1),...
+                    matMarblesPosition(iFrame,iMarble,2),radius,radius],...
+                    'Curvature',[0,0],'Edgecolor',sColor);
+            end
+        end
  
   end
   
@@ -363,8 +399,8 @@ for iFrame = 1 : nFrames
       xcenter=[matMarblesPosition(iFrame,:,1)];
       ycenter=[matMarblesPosition(iFrame,:,2)];
   else
-      xcenter=[0];
-      ycenter=[0];
+      xcenter=0;
+      ycenter=0;
   end
   
 %  end
@@ -375,7 +411,16 @@ for iFrame = 1 : nFrames
   %strTrackedMarbles{iFrame}.xcenter=matMarblesPosition(iFrame,2);
   %strTrackedMarbles{iFrame}.ycenter=matMarblesPosition(iFrame,3);  
 %    pause(0.5) % wait a bit for the display to catch up   
-                
+  for i2Marble=1:nTrackedMarbles
+    
+    sColor=sColors(mod(i2Marble,length(sColors)-1)+1);
+    idxValidPositions=find(matMarblesPosition(:,i2Marble,1)>0);
+    x2Detected=matMarblesPosition(idxValidPositions,i2Marble,1);
+    y2Detected=matMarblesPosition(idxValidPositions,i2Marble,2);
+    
+    plot(x2Detected,y2Detected,'Color',sColor,'LineStyle','-','Marker','*');
+end
+              
 end
 
 %Filter out objects detected for less than a number of frames

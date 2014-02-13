@@ -6,8 +6,9 @@ function [ matMarbles, n_detected ] = detect_marbles( directory, bShowImages )
 % and outputs their detections in a cell array, it also returns the number of
 % marbles detected in each frame.
 % Parts of code based detectp.m
-% Input :  directory - The directory where images files are located in
-% format %d.jpg
+% Input :   directory - The directory where images files are located. Has
+%           format '%d.jpg'
+%           bShowImages - a boolean which controls image display.
 % Output : matMarbles - cell array of detected marbles, indexed by frame,
 %                       containing x, y and radius
 %          n_detected - vector containing the number of detected marbles per frame
@@ -60,7 +61,7 @@ for i = 1 : num_Images
     end
     
     %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  
-    pause(0.3)
+    pause(1)
   end
 
 

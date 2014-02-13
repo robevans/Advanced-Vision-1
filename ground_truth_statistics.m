@@ -103,6 +103,8 @@ end
 
 n_correct_pairings = 0;
 n_erroneous_pairings = 0;
+first_assigned_label = 0;
+second_assigned_label = 0;
 
 %% Tracking statistics: Count the number of correct and erroneous pairings out of the marbles that we detected.
 for marbleSet = 1 : 2

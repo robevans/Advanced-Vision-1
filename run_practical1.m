@@ -9,7 +9,6 @@ function [ success ] = run_practical1( directory )
 %Robert Evans
 %Francisco Aguirre
 
-%[Images_marbles,success]=detect_marbles_adaptive(directory);
 [matMarbles,vecnDetected]=detect_marbles(directory,false);
 
 [Tracking_marbles,matMarblesPosition,nTrackedMarbles,success] = track_marbles(matMarbles, directory, vecnDetected);

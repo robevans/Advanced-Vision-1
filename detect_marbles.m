@@ -58,6 +58,10 @@ for i = 1 : num_Images
     hold on
     for i2=1:n_detected(i)
         plot(matMarbles{i}(i2,1),matMarbles{i}(i2,2),'g*');
+        rectangle('Position',[matMarbles{i}(i2,1)-matMarbles{i}(i2,3)/2,...
+            matMarbles{i}(i2,2)-matMarbles{i}(i2,3)/2,...
+            matMarbles{i}(i2,3),matMarbles{i}(i2,3)],...
+            'Curvature',[1,1],'Edgecolor','g');        
     end
     
     %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  

@@ -53,11 +53,9 @@ for frame = 1 : num_Images  % loop over all frames
             x=new_marbles_comingFromRight(marblenum).row_of_centers(index_a); % x left most pixel
             y=new_marbles_comingFromRight(marblenum).col_of_centers(index_a); % y of left most pixel
             matGroundTruthStats(frame,1)=matGroundTruthStats(frame,1)+1;
+            x_detected=Tracking_marbles{frame}(:,1);
+            y_detected=Tracking_marbles{frame}(:,2);
             %Look for our marbles within a distance of x and y
-            index_detected=find([Tracking_marbles.frame]==frame);
-            if ~isempty(index_detected)
-                x_detected=Tracking_marbles(index_detected).xcenter;
-                y_detected=Tracking_marbles(index_detected).ycenter;
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
                         % If it was detected within 10 pixels:
@@ -69,7 +67,7 @@ for frame = 1 : num_Images  % loop over all frames
                     end
                     
                 end
-            end
+%            end
         end
     end
     
@@ -79,11 +77,9 @@ for frame = 1 : num_Images  % loop over all frames
             x=new_marbles_comingFromLeft(marblenum).row_of_centers(index_a); % x left most pixel
             y=new_marbles_comingFromLeft(marblenum).col_of_centers(index_a); % y of left most pixel
             matGroundTruthStats(frame,1)=matGroundTruthStats(frame,1)+1;
+            x_detected=Tracking_marbles{frame}(:,1);
+            y_detected=Tracking_marbles{frame}(:,2);
             %Look for our marbles within a distance of x and y
-            index_detected=find([Tracking_marbles.frame]==frame);
-            if ~isempty(index_detected)
-                x_detected=Tracking_marbles(index_detected).xcenter;
-                y_detected=Tracking_marbles(index_detected).ycenter;
                 for i_detected=1:length(x_detected)
                     if (iDetectionRadius>=abs(sqrt(((x_detected(i_detected)-x)^2+(y_detected(i_detected)-y)^2))))
                         % If it was detected within 10 pixels:
@@ -95,7 +91,7 @@ for frame = 1 : num_Images  % loop over all frames
                     end
                     
                 end
-            end
+%            end
         end
     end
     

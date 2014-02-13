@@ -23,7 +23,7 @@ if (~success)
     return;
 end    
 
-success = ground_truth_statistics(directory, Tracking_marbles, matMarblesPosition);
+success = ground_truth_statistics(directory, matMarbles, matMarblesPosition);
 if (~success)
     fprintf('Ground Truth statistics could not be calculated.');
     return;

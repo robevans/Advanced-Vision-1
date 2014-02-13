@@ -30,54 +30,54 @@ fig4=0;
 % Foreground detection for all images.
 for i = 1 : num_Images
     % load image
-  Im = imread([strcat(directory,int2str(i)), '.jpg'],'jpg');
-  if fig1 > 0
-    figure(fig1)
-    clf
-    imshow(Im)
-  end
-  Imwork = double(Im);
-
-  %Extract marbles from image
-  %matMarbles is an matrix, column 1 is x, column 2 is y
-  %columns 3 is radius for each marbles
-  %columns 4 to (256+4) are the histogram of the marble
-  %each rows has a detected object (hopefully a marble)
-  %n_detected is the number of detected marbles
-  [success, matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
-  if ~success
-      return;
-  end
-  
-  % Add the extracted background to the existing background, so that it
-  % adapts to new conditions.
-  imgBackGround = averageInExtractedBackground(imgBackGround, extracted_background);
-
-  if fig1 > 0
-    figure(fig1)
-    hold on
-    for i2=1:n_detected(i)
-        plot(matMarbles{i}(i2,1),matMarbles{i}(i2,2),'g*');
-        rectangle('Position',[matMarbles{i}(i2,1)-matMarbles{i}(i2,3)/2,...
-            matMarbles{i}(i2,2)-matMarbles{i}(i2,3)/2,...
-            matMarbles{i}(i2,3),matMarbles{i}(i2,3)],...
-            'Curvature',[1,1],'Edgecolor','g');        
+    Im = imread([strcat(directory,int2str(i)), '.jpg'],'jpg');
+    if fig1 > 0
+        figure(fig1)
+        clf
+        imshow(Im)
+    end
+    Imwork = double(Im);
+    
+    %Extract marbles from image
+    %matMarbles is an matrix, column 1 is x, column 2 is y
+    %columns 3 is radius for each marbles
+    %columns 4 to (256+4) are the histogram of the marble
+    %each rows has a detected object (hopefully a marble)
+    %n_detected is the number of detected marbles
+    [success, matMarbles{i}, n_detected(i), extracted_background]=extract_marbles(Imwork,imgBackGround,fig1,fig2,fig3,bShowImages);
+    if ~success
+        return;
     end
     
-    %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);  
-    pause(1)
-  end
-
-
+    % Add the extracted background to the existing background, so that it
+    % adapts to new conditions.
+    imgBackGround = averageInExtractedBackground(imgBackGround, extracted_background);
+    
+    if fig1 > 0
+        figure(fig1)
+        hold on
+        for i2=1:n_detected(i)
+            plot(matMarbles{i}(i2,1),matMarbles{i}(i2,2),'g*');
+            rectangle('Position',[matMarbles{i}(i2,1)-matMarbles{i}(i2,3)/2,...
+                matMarbles{i}(i2,2)-matMarbles{i}(i2,3)/2,...
+                matMarbles{i}(i2,3),matMarbles{i}(i2,3)],...
+                'Curvature',[1,1],'Edgecolor','g');
+        end
+        
+        %eval(['saveas(gcf,''TRACK/trk',int2str(i-1),'.jpg'',''jpg'')']);
+        pause(1);
+    end
+    
+    
 end
 
 % show positions
 if fig4 > 0
-  figure(fig4)
-  hold on
-  clf
-%  plot(matMarbles(i),'r*')
-%  plot(cr,'g*')
+    figure(fig4)
+    hold on
+    clf
+    %  plot(matMarbles(i),'r*')
+    %  plot(cr,'g*')
 end
 
 end
